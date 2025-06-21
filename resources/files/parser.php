@@ -5205,12 +5205,10 @@ function phql_ret_func_call(array  &$ret, string $name, $arguments = null, $dist
     $ret['type'] = defined('PHQL_T_FCALL') ? PHQL_T_FCALL : 0;
     $ret['name'] = $name;
 
-    /* if (arguments && Z_TYPE_P(arguments) != IS_UNDEF) */
     if ($arguments !== null) {
         $ret['arguments'] = $arguments;
     }
 
-    /* if (distinct && Z_TYPE_P(distinct) != IS_UNDEF) */
     if ($distinct !== null) {
         $ret['distinct'] = $distinct;
     }

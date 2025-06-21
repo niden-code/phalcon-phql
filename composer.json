@@ -1,5 +1,13 @@
 {
     "name": "phalcon/phql",
+    "description": "Phalcon Query Language (PHQL)",
+    "keywords": [
+        "php",
+        "framework",
+        "query",
+        "sql"
+    ],
+    "license": "MIT",
     "require": {
         "php": ">=8.1",
         "ext-mbstring": "*"
