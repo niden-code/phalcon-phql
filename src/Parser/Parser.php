@@ -35,6 +35,7 @@ class Parser
         $codeLength = strlen($phql);
         $parserState = new State($phql);
         $parserStatus = new Status($parserState);
+        $parserStatus->setEnableLiterals(true);
         $scanner = new Scanner($parserStatus->getState());
 
         $parser = new phql_Parser($parserStatus);
