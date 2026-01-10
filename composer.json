@@ -22,5 +22,14 @@
         "files": [
             "resources/files/parser.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Phalcon\\Phql\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-html coverage"
     }
 }

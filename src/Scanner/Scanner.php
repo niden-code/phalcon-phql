@@ -57,7 +57,6 @@ class Scanner
             $yyaccept = 0;
             $yystate  = 0;
             while (true) {
-                //var_dump("State " . $yystate . " Char " . $yych . " Accept " . $yyaccept);
                 switch ($yystate) {
                     case 0:
                         $yych = $this->state->getStart();

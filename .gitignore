@@ -2,3 +2,10 @@
 /vendor/
 /lemon-php/
 composer.phar
+
+phql.log
+
+# PHPUnit
+.phpunit.cache/
+coverage/
+coverage.xml

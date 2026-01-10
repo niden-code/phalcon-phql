@@ -5142,14 +5142,14 @@ function phql_ret_delete_clause(array &$ret, $tables): void
     ];
 }
 
-function phql_ret_assoc_name(array &$ret, $qualifiedName, ?string $alias = null, $with = null): void
+function phql_ret_assoc_name(array &$ret, $qualifiedName, $alias = null, $with = null): void
 {
     $ret = [
         'qualifiedName' => $qualifiedName,
     ];
 
     if ($alias !== null) {
-        $ret['alias'] = $alias;
+        $ret['alias'] = $alias instanceof Token ? $alias->getValue() : $alias;
     }
 
     if ($with !== null) {
@@ -5199,11 +5199,11 @@ function phql_ret_raw_qualified_name(array &$ret, string $tokenA, ?string $token
     }
 }
 
-function phql_ret_func_call(array  &$ret, string $name, $arguments = null, $distinct = null): void
+function phql_ret_func_call(array  &$ret, $name, $arguments = null, $distinct = null): void
 {
     $ret = [];
     $ret['type'] = defined('PHQL_T_FCALL') ? PHQL_T_FCALL : 0;
-    $ret['name'] = $name;
+    $ret['name'] = $name instanceof Token ? $name->getValue() : $name;
 
     if ($arguments !== null) {
         $ret['arguments'] = $arguments;

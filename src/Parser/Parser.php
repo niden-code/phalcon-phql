@@ -15,7 +15,7 @@ class Parser
 {
     private ?Token $token = null;
 
-    private string $debugFile = 'phql.txt';
+    private string $debugFile = 'phql.log';
 
     public function __construct(private readonly bool $debug = false)
     {
@@ -403,7 +403,6 @@ class Parser
         int $opcode,
         int $parserCode,
     ): void {
-        var_dump($this->token->getValue());
         $newToken = new Token();
         $newToken->setOpcode($opcode);
         $newToken->setValue($this->token->getValue());
