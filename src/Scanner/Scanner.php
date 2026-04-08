@@ -4,28 +4,8 @@ declare(strict_types=1);
 
 namespace Phalcon\Phql\Scanner;
 
-/* scanner.rex
- * This file is part of the Phalcon Framework.
- *
- * (c) Phalcon Team <team@phalcon.io>
- *
- * For the full copyright and license information, please view the
- * LICENSE.txt file that was distributed with this source code.
- */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "php.h"
-#include "php_phalcon.h"
-
-#include "scanner.h"
-
-#define YYCTYPE unsigned char
-#define YYCURSOR (s->start)
-#define YYLIMIT (s->end)
-#define YYMARKER q
+use Phalcon\Phql\Scanner\State;
+use Phalcon\Phql\Scanner\Token;
 
 class Scanner
 {
@@ -34,8 +14,6 @@ class Scanner
     public const PHQL_SCANNER_RETCODE_IMPOSSIBLE = -3;
 
     private Token $token;
-
-    private int $start;
 
     public function __construct(private State $state)
     {
@@ -49,25 +27,29 @@ class Scanner
 
     public function scanForToken(): int
     {
-        $this->start = $this->state->getCursor();
+        $yyinput  = $this->state->getRawBuffer();
+        $yycursor = $this->state->getCursor();
+        $q        = $yycursor;
+        $token    = $this->token;
         $status = self::PHQL_SCANNER_RETCODE_IMPOSSIBLE;
 
+
         while (self::PHQL_SCANNER_RETCODE_IMPOSSIBLE == $status) {
-            $yych     = $this->state->getStart();
+            $yych     = 0;
             $yyaccept = 0;
             $yystate  = 0;
             while (true) {
                 switch ($yystate) {
                     case 0:
-                        $yych = $this->state->getStart();
-                        $this->state->incrementStart();
+                        $yych     = $yyinput[$yycursor];
+                        $yycursor += 1;
                         switch ($yych) {
-                            case null:
+                            case 0x00:
                                 $yystate = 1;
                                 break 2;
-                            case "\t":
-                            case "\n":
-                            case "\r":
+                            case '\t':
+                            case '\n':
+                            case '\r':
                             case ' ':
                                 $yystate = 4;
                                 break 2;
@@ -258,43 +240,47 @@ class Scanner
                                 break 2;
                         }
                     case 1:
+
                         $status = self::PHQL_SCANNER_RETCODE_EOF;
-                        break 2;
+                        break;
+
                     case 2:
                         $yystate = 3;
-                        $this->state->incrementStart();
                         break 2;
                     case 3:
+
                         $status = self::PHQL_SCANNER_RETCODE_ERR;
                         break;
 
                     case 4:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
-                            case "\t":
-                            case "\n":
-                            case "\r":
+                            case '\t':
+                            case '\n':
+                            case '\r':
                             case ' ':
-                                $this->state->incrementStart();
-                                $yystate = 4;
+                                $yycursor += 1;
+                                $yystate  = 4;
                                 break 2;
                             default:
                                 $yystate = 5;
                                 break 2;
                         }
                     case 5:
-                        $this->token->setOpcode(Opcode::PHQL_T_IGNORE);
+
+                        $token->opcode = Opcode::PHQL_T_IGNORE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 6:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '!':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 65;
                                 break 2;
                             case '=':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 66;
                                 break 2;
                             default:
@@ -303,13 +289,14 @@ class Scanner
                         }
                     case 7:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_NOT);
+                        $token->opcode = Opcode::PHQL_T_NOT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 8:
                         $yyaccept = 0;
-                        $yymarker = $this->state->getCursor();
-                        $yych     = $this->state->getStart();
+                        $yymarker = $yycursor;
+                        $yych     = $yyinput[$yycursor];
                         if ($yych <= 0x00) {
                             $yystate = 3;
                             break 2;
@@ -318,14 +305,15 @@ class Scanner
                         break 2;
                     case 9:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_MOD);
+                        $token->opcode = Opcode::PHQL_T_MOD;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 10:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '&':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 72;
                                 break 2;
                             default:
@@ -333,13 +321,15 @@ class Scanner
                                 break 2;
                         }
                     case 11:
-                        $this->token->setOpcode(Opcode::PHQL_T_BITWISE_AND);
+
+                        $token->opcode = Opcode::PHQL_T_BITWISE_AND;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 12:
                         $yyaccept = 0;
-                        $yymarker = $this->state->getCursor();
-                        $yych     = $this->state->getStart();
+                        $yymarker = $yycursor;
+                        $yych     = $yyinput[$yycursor];
                         if ($yych <= 0x00) {
                             $yystate = 3;
                             break 2;
@@ -347,32 +337,43 @@ class Scanner
                         $yystate = 74;
                         break 2;
                     case 13:
-                        $this->token->setOpcode(Opcode::PHQL_T_PARENTHESES_OPEN);
+
+                        $token->opcode = Opcode::PHQL_T_PARENTHESES_OPEN;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 14:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_PARENTHESES_CLOSE);
+                        $token->opcode = Opcode::PHQL_T_PARENTHESES_CLOSE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 15:
-                        $this->token->setOpcode(Opcode::PHQL_T_MUL);
+
+                        $token->opcode = Opcode::PHQL_T_MUL;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 16:
-                        $this->token->setOpcode(Opcode::PHQL_T_ADD);
+
+                        $token->opcode = Opcode::PHQL_T_ADD;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 17:
-                        $this->token->setOpcode(Opcode::PHQL_T_COMMA);
+
+                        $token->opcode = Opcode::PHQL_T_COMMA;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 18:
-                        $this->token->setOpcode(Opcode::PHQL_T_SUB);
+
+                        $token->opcode = Opcode::PHQL_T_SUB;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 19:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -384,7 +385,7 @@ class Scanner
                             case '7':
                             case '8':
                             case '9':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 76;
                                 break 2;
                             default:
@@ -392,18 +393,22 @@ class Scanner
                                 break 2;
                         }
                     case 20:
-                        $this->token->setOpcode(Opcode::PHQL_T_DOT);
+
+                        $token->opcode = Opcode::PHQL_T_DOT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 21:
-                        $this->token->setOpcode(Opcode::PHQL_T_DIV);
+
+                        $token->opcode = Opcode::PHQL_T_DIV;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 22:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '.':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 76;
                                 break 2;
                             case '0':
@@ -416,7 +421,7 @@ class Scanner
                             case '7':
                             case '8':
                             case '9':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 22;
                                 break 2;
                             case 'A':
@@ -432,7 +437,7 @@ class Scanner
                             case 'e':
                             case 'f':
                             case 'x':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 78;
                                 break 2;
                             default:
@@ -440,17 +445,18 @@ class Scanner
                                 break 2;
                         }
                     case 23:
-                        $this->token->setOpcode(Opcode::PHQL_T_INTEGER);
-                        $this->token->setValue(
-                            substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                        );
-                        $this->start = $this->state->getCursor();
+
+                        $token->opcode = Opcode::PHQL_T_INTEGER;
+                        $token->value  = substr($yyinput, $q, $yycursor - $q);
+                        $token->len    = $yycursor - $q;
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 24:
                         $yyaccept = 1;
-                        $yymarker = $this->state->getCursor();
-                        $yych     = $this->state->getStart();
+                        $yymarker = $yycursor;
+                        $yych     = $yyinput[$yycursor];
                         switch ($yych) {
                             case '-':
                             case '0':
@@ -516,7 +522,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 79;
                                 break 2;
                             default:
@@ -525,18 +531,19 @@ class Scanner
                         }
                     case 25:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_COLON);
+                        $token->opcode = Opcode::PHQL_T_COLON;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 26:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '=':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 80;
                                 break 2;
                             case '>':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 81;
                                 break 2;
                             default:
@@ -545,19 +552,21 @@ class Scanner
                         }
                     case 27:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_LESS);
+                        $token->opcode = Opcode::PHQL_T_LESS;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 28:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_EQUALS);
+                        $token->opcode = Opcode::PHQL_T_EQUALS;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 29:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '=':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 82;
                                 break 2;
                             default:
@@ -566,11 +575,12 @@ class Scanner
                         }
                     case 30:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_GREATER);
+                        $token->opcode = Opcode::PHQL_T_GREATER;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 31:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -582,7 +592,7 @@ class Scanner
                             case '7':
                             case '8':
                             case '9':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 83;
                                 break 2;
                             default:
@@ -590,14 +600,14 @@ class Scanner
                                 break 2;
                         }
                     case 32:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '>':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 85;
                                 break 2;
                             case '@':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 86;
                                 break 2;
                             default:
@@ -605,26 +615,26 @@ class Scanner
                                 break 2;
                         }
                     case 33:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'G':
                             case 'g':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 87;
                                 break 2;
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 88;
                                 break 2;
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 89;
                                 break 2;
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 90;
                                 break 2;
                             default:
@@ -632,16 +642,15 @@ class Scanner
                                 break 2;
                         }
                     case 34:
-                        $this->token->setValue(
-                            substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                        );
 
-                        if (($this->token->getLength() > 2) && !strncmp($this->token->getValue(), "0x", 2)) {
-                            $this->token->setOpcode(Opcode::PHQL_T_HINTEGER);
+                        $token->value = substr($yyinput, $q, $yycursor - $q);
+                        $token->len   = $yycursor - $q;
+                        if ($token->len > 2 && str_starts_with($token->value, "0x")) {
+                            $token->opcode = Opcode::PHQL_T_HINTEGER;
                         } else {
                             $alpha = 0;
-                            for ($i = 0; $i < $this->token->getLength(); $i++) {
-                                $ch = $this->token->getValue()[$i];
+                            for ($i = 0; $i < $token->len; $i++) {
+                                $ch = $token->value[$i];
                                 if (!(($ch >= '0') && ($ch <= '9'))) {
                                     $alpha = 1;
                                     break;
@@ -649,26 +658,27 @@ class Scanner
                             }
 
                             if ($alpha) {
-                                $this->token->setOpcode(Opcode::PHQL_T_IDENTIFIER);
+                                $token->opcode = Opcode::PHQL_T_IDENTIFIER;
                             } else {
-                                $this->token->setOpcode(Opcode::PHQL_T_INTEGER);
+                                $token->opcode = Opcode::PHQL_T_INTEGER;
                             }
                         }
 
-                        $this->start = $this->state->getCursor();
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 35:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 92;
                                 break 2;
                             case 'Y':
                             case 'y':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 93;
                                 break 2;
                             default:
@@ -676,21 +686,21 @@ class Scanner
                                 break 2;
                         }
                     case 36:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'A':
                             case 'a':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 95;
                                 break 2;
                             case 'O':
                             case 'o':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 96;
                                 break 2;
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 97;
                                 break 2;
                             default:
@@ -698,16 +708,16 @@ class Scanner
                                 break 2;
                         }
                     case 37:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 98;
                                 break 2;
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 99;
                                 break 2;
                             default:
@@ -715,24 +725,24 @@ class Scanner
                                 break 2;
                         }
                     case 38:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 100;
                                 break 2;
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 101;
                                 break 2;
                             case 'X':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 102;
                                 break 2;
                             case 'x':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 103;
                                 break 2;
                             default:
@@ -740,26 +750,26 @@ class Scanner
                                 break 2;
                         }
                     case 39:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'A':
                             case 'a':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 104;
                                 break 2;
                             case 'O':
                             case 'o':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 105;
                                 break 2;
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 106;
                                 break 2;
                             case 'U':
                             case 'u':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 107;
                                 break 2;
                             default:
@@ -767,11 +777,11 @@ class Scanner
                                 break 2;
                         }
                     case 40:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 108;
                                 break 2;
                             default:
@@ -779,31 +789,30 @@ class Scanner
                                 break 2;
                         }
                     case 41:
-                        $this->token->setOpcode(Opcode::PHQL_T_IDENTIFIER);
-                        if (($this->state->getCursor() - $this->start) > 1) {
-                            if ($this->state->getStart() == '\\') {
-                                $this->token->setValue(
-                                    substr($this->state->getRawBuffer(), $this->start + 1, $this->state->getCursor() - $this->start)
-                                );
+
+                        $token->opcode = Opcode::PHQL_T_IDENTIFIER;
+                        if (($yycursor - $q) > 1) {
+                            if ($yyinput[$q] === '\\') {
+                                $token->value = substr($yyinput, $q + 1, $yycursor - $q - 1);
+                                $token->len   = $yycursor - $q - 1;
                             } else {
-                                $this->token->setValue(
-                                    substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                                );
+                                $token->value = substr($yyinput, $q, $yycursor - $q);
+                                $token->len   = $yycursor - $q;
                             }
                         } else {
-                            $this->token->setValue(
-                                substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                            );
+                            $token->value = substr($yyinput, $q, $yycursor - $q);
+                            $token->len   = $yycursor - $q;
                         }
-                        $this->start = $this->state->getCursor();
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 42:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'A':
                             case 'a':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 109;
                                 break 2;
                             default:
@@ -811,21 +820,21 @@ class Scanner
                                 break 2;
                         }
                     case 43:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 110;
                                 break 2;
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 111;
                                 break 2;
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 113;
                                 break 2;
                             default:
@@ -833,10 +842,11 @@ class Scanner
                                 break 2;
                         }
                     case 44:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'O':
                             case 'o':
+                                $yycursor += 1;
                                 $yystate  = 115;
                                 break 2;
                             default:
@@ -844,9 +854,9 @@ class Scanner
                                 break 2;
                         }
                     case 45:
-                        $yych    = $this->state->getStart();
+                        $yych    = $yyinput[$yycursor];
                         $yystate = 46;
-                        break;
+                        break 2;
                     case 46:
                         switch ($yych) {
                             case '0':
@@ -914,7 +924,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -922,16 +932,16 @@ class Scanner
                                 break 2;
                         }
                     case 47:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 116;
                                 break 2;
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 117;
                                 break 2;
                             default:
@@ -939,16 +949,16 @@ class Scanner
                                 break 2;
                         }
                     case 48:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'O':
                             case 'o':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 118;
                                 break 2;
                             case 'U':
                             case 'u':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 119;
                                 break 2;
                             default:
@@ -956,26 +966,26 @@ class Scanner
                                 break 2;
                         }
                     case 49:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'F':
                             case 'f':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 120;
                                 break 2;
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 121;
                                 break 2;
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 123;
                                 break 2;
                             case 'U':
                             case 'u':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 125;
                                 break 2;
                             default:
@@ -983,11 +993,11 @@ class Scanner
                                 break 2;
                         }
                     case 50:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 126;
                                 break 2;
                             default:
@@ -995,11 +1005,11 @@ class Scanner
                                 break 2;
                         }
                     case 51:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 127;
                                 break 2;
                             default:
@@ -1007,16 +1017,16 @@ class Scanner
                                 break 2;
                         }
                     case 52:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'H':
                             case 'h':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 128;
                                 break 2;
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 129;
                                 break 2;
                             default:
@@ -1024,16 +1034,16 @@ class Scanner
                                 break 2;
                         }
                     case 53:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'P':
                             case 'p':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 130;
                                 break 2;
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 131;
                                 break 2;
                             default:
@@ -1041,11 +1051,11 @@ class Scanner
                                 break 2;
                         }
                     case 54:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'A':
                             case 'a':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 132;
                                 break 2;
                             default:
@@ -1053,16 +1063,16 @@ class Scanner
                                 break 2;
                         }
                     case 55:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'H':
                             case 'h':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 133;
                                 break 2;
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 134;
                                 break 2;
                             default:
@@ -1071,9 +1081,8 @@ class Scanner
                         }
                     case 56:
                         $yyaccept = 0;
-                        $this->state->incrementStart();
-                        $yymarker = $this->state->getCursor();
-                        $yych     = $this->state->getStart();
+                        $yymarker = $yycursor;
+                        $yych     = $yyinput[$yycursor];
                         switch ($yych) {
                             case 0x00:
                             case 0x01:
@@ -1116,7 +1125,7 @@ class Scanner
                                 break 2;
                         }
                     case 57:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'A':
                             case 'B':
@@ -1171,7 +1180,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -1180,11 +1189,12 @@ class Scanner
                         }
                     case 58:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_BITWISE_XOR);
+                        $token->opcode = Opcode::PHQL_T_BITWISE_XOR;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 59:
-                        $yych    = $this->state->getStart();
+                        $yych    = $yyinput[$yycursor];
                         $yystate = 60;
                         break 2;
                     case 60:
@@ -1212,7 +1222,7 @@ class Scanner
                             case 'e':
                             case 'f':
                             case 'x':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 59;
                                 break 2;
                             case ':':
@@ -1257,7 +1267,7 @@ class Scanner
                             case 'w':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -1266,8 +1276,8 @@ class Scanner
                         }
                     case 61:
                         $yyaccept = 0;
-                        $yymarker = $this->state->getCursor();
-                        $yych     = $this->state->getStart();
+                        $yymarker = $yycursor;
+                        $yych     = $yyinput[$yycursor];
                         switch ($yych) {
                             case '-':
                             case '0':
@@ -1334,7 +1344,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 140;
                                 break 2;
                             default:
@@ -1342,10 +1352,10 @@ class Scanner
                                 break 2;
                         }
                     case 62:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '|':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 141;
                                 break 2;
                             default:
@@ -1354,26 +1364,30 @@ class Scanner
                         }
                     case 63:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_BITWISE_OR);
+                        $token->opcode = Opcode::PHQL_T_BITWISE_OR;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 64:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_BITWISE_NOT);
+                        $token->opcode = Opcode::PHQL_T_BITWISE_NOT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 65:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_TS_NEGATE);
+                        $token->opcode = Opcode::PHQL_T_TS_NEGATE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 66:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_NOTEQUALS);
+                        $token->opcode = Opcode::PHQL_T_NOTEQUALS;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 67:
-                        $yych    = $this->state->getStart();
+                        $yych    = $yyinput[$yycursor];
                         $yystate = 68;
                         break 2;
                     case 68:
@@ -1382,20 +1396,20 @@ class Scanner
                                 $yystate = 69;
                                 break 2;
                             case '"':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 70;
                                 break 2;
                             case '\\':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 71;
                                 break 2;
                             default:
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 67;
                                 break 2;
                         }
                     case 69:
-                        $yycursor = $this->state->getCursor();
+                        $yycursor = $yymarker;
                         switch ($yyaccept) {
                             case 0:
                                 $yystate = 3;
@@ -1411,31 +1425,33 @@ class Scanner
                                 break 2;
                         }
                     case 70:
-                        $this->token->setOpcode(Opcode::PHQL_T_STRING);
-                        $this->token->setValue(
-                            substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                        );
-                        $this->start = $this->state->getCursor();
+
+                        $token->opcode = Opcode::PHQL_T_STRING;
+                        $token->value  = substr($yyinput, $q, $yycursor - $q - 1);
+                        $token->len    = $yycursor - $q - 1;
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 71:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '\n':
                                 $yystate = 69;
                                 break 2;
                             default:
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 67;
                                 break 2;
                         }
                     case 72:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_TS_AND);
+                        $token->opcode = Opcode::PHQL_T_TS_AND;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 73:
-                        $yych    = $this->state->getStart();
+                        $yych    = $yyinput[$yycursor];
                         $yystate = 74;
                         break 2;
                     case 74:
@@ -1444,31 +1460,31 @@ class Scanner
                                 $yystate = 69;
                                 break 2;
                             case '\'':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 70;
                                 break 2;
                             case '\\':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 75;
                                 break 2;
                             default:
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 73;
                                 break 2;
                         }
                     case 75:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '\n':
                                 $yystate = 69;
                                 break 2;
                             default:
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 73;
                                 break 2;
                         }
                     case 76:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -1480,7 +1496,7 @@ class Scanner
                             case '7':
                             case '8':
                             case '9':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 76;
                                 break 2;
                             default:
@@ -1488,15 +1504,16 @@ class Scanner
                                 break 2;
                         }
                     case 77:
-                        $this->token->setOpcode(Opcode::PHQL_T_DOUBLE);
-                        $this->token->setValue(
-                            substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                        );
-                        $this->start = $this->state->getCursor();
+
+                        $token->opcode = Opcode::PHQL_T_DOUBLE;
+                        $token->value  = substr($yyinput, $q, $yycursor - $q);
+                        $token->len    = $yycursor - $q;
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 78:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -1521,7 +1538,7 @@ class Scanner
                             case 'e':
                             case 'f':
                             case 'x':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 78;
                                 break 2;
                             default:
@@ -1529,7 +1546,7 @@ class Scanner
                                 break 2;
                         }
                     case 79:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '-':
                             case '0':
@@ -1595,11 +1612,11 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 79;
                                 break 2;
                             case ':':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 142;
                                 break 2;
                             default:
@@ -1607,16 +1624,19 @@ class Scanner
                                 break 2;
                         }
                     case 80:
-                        $this->token->setOpcode(Opcode::PHQL_T_LESSEQUAL);
+                        $token->opcode = Opcode::PHQL_T_LESSEQUAL;
+                        $this->state->setCursor($yycursor);
                         return 0;
                     case 81:
-                        $this->token->setOpcode(Opcode::PHQL_T_NOTEQUALS);
+                        $token->opcode = Opcode::PHQL_T_NOTEQUALS;
+                        $this->state->setCursor($yycursor);
                         return 0;
                     case 82:
-                        $this->token->setOpcode(Opcode::PHQL_T_GREATEREQUAL);
+                        $token->opcode = Opcode::PHQL_T_GREATEREQUAL;
+                        $this->state->setCursor($yycursor);
                         return 0;
                     case 83:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -1628,7 +1648,7 @@ class Scanner
                             case '7':
                             case '8':
                             case '9':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 83;
                                 break 2;
                             default:
@@ -1636,24 +1656,26 @@ class Scanner
                                 break 2;
                         }
                     case 84:
-                        $this->token->setOpcode(Opcode::PHQL_T_NPLACEHOLDER);
-                        $this->token->setValue(
-                            substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                        );
-                        $this->start = $this->state->getCursor();
+                        $token->opcode = Opcode::PHQL_T_NPLACEHOLDER;
+                        $token->value  = substr($yyinput, $q, $yycursor - $q);
+                        $token->len    = $yycursor - $q;
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
                     case 85:
-                        $this->token->setOpcode(Opcode::PHQL_T_TS_CONTAINS_ANOTHER);
+                        $token->opcode = Opcode::PHQL_T_TS_CONTAINS_ANOTHER;
+                        $this->state->setCursor($yycursor);
                         return 0;
                     case 86:
-                        $this->token->setOpcode(Opcode::PHQL_T_TS_MATCHES);
+                        $token->opcode = Opcode::PHQL_T_TS_MATCHES;
+                        $this->state->setCursor($yycursor);
                         return 0;
                     case 87:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'A':
                             case 'a':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 143;
                                 break 2;
                             default:
@@ -1661,11 +1683,11 @@ class Scanner
                                 break 2;
                         }
                     case 88:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 144;
                                 break 2;
                             default:
@@ -1673,11 +1695,11 @@ class Scanner
                                 break 2;
                         }
                     case 89:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'D':
                             case 'd':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 146;
                                 break 2;
                             default:
@@ -1685,7 +1707,7 @@ class Scanner
                                 break 2;
                         }
                     case 90:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -1750,12 +1772,12 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             case 'C':
                             case 'c':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 148;
                                 break 2;
                             default:
@@ -1764,14 +1786,15 @@ class Scanner
                         }
                     case 91:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_AS);
+                        $token->opcode = Opcode::PHQL_T_AS;
+                        $this->state->setCursor($yycursor);
                         return 0;
                     case 92:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 150;
                                 break 2;
                             default:
@@ -1779,7 +1802,7 @@ class Scanner
                                 break 2;
                         }
                     case 93:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -1846,7 +1869,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -1855,14 +1878,15 @@ class Scanner
                         }
                     case 94:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_BY);
+                        $token->opcode = Opcode::PHQL_T_BY;
+                        $this->state->setCursor($yycursor);
                         return 0;
                     case 95:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 151;
                                 break 2;
                             default:
@@ -1870,11 +1894,11 @@ class Scanner
                                 break 2;
                         }
                     case 96:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 152;
                                 break 2;
                             default:
@@ -1882,11 +1906,11 @@ class Scanner
                                 break 2;
                         }
                     case 97:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'O':
                             case 'o':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 153;
                                 break 2;
                             default:
@@ -1894,16 +1918,16 @@ class Scanner
                                 break 2;
                         }
                     case 98:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 154;
                                 break 2;
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 155;
                                 break 2;
                             default:
@@ -1911,11 +1935,11 @@ class Scanner
                                 break 2;
                         }
                     case 99:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 156;
                                 break 2;
                             default:
@@ -1923,11 +1947,11 @@ class Scanner
                                 break 2;
                         }
                     case 100:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 157;
                                 break 2;
                             default:
@@ -1935,11 +1959,11 @@ class Scanner
                                 break 2;
                         }
                     case 101:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'D':
                             case 'd':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 158;
                                 break 2;
                             default:
@@ -1947,11 +1971,11 @@ class Scanner
                                 break 2;
                         }
                     case 102:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 160;
                                 break 2;
                             default:
@@ -1959,11 +1983,11 @@ class Scanner
                                 break 2;
                         }
                     case 103:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 160;
                                 break 2;
                             default:
@@ -1971,11 +1995,11 @@ class Scanner
                                 break 2;
                         }
                     case 104:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 161;
                                 break 2;
                             default:
@@ -1983,11 +2007,11 @@ class Scanner
                                 break 2;
                         }
                     case 105:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 162;
                                 break 2;
                             default:
@@ -1995,11 +2019,11 @@ class Scanner
                                 break 2;
                         }
                     case 106:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'O':
                             case 'o':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 164;
                                 break 2;
                             default:
@@ -2007,11 +2031,11 @@ class Scanner
                                 break 2;
                         }
                     case 107:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 165;
                                 break 2;
                             default:
@@ -2019,11 +2043,11 @@ class Scanner
                                 break 2;
                         }
                     case 108:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'O':
                             case 'o':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 166;
                                 break 2;
                             default:
@@ -2031,11 +2055,11 @@ class Scanner
                                 break 2;
                         }
                     case 109:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'V':
                             case 'v':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 167;
                                 break 2;
                             default:
@@ -2043,11 +2067,11 @@ class Scanner
                                 break 2;
                         }
                     case 110:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 168;
                                 break 2;
                             default:
@@ -2055,7 +2079,7 @@ class Scanner
                                 break 2;
                         }
                     case 111:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -2116,22 +2140,22 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 169;
                                 break 2;
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 170;
                                 break 2;
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 171;
                                 break 2;
                             default:
@@ -2140,11 +2164,12 @@ class Scanner
                         }
                     case 112:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_IN);
+                        $token->opcode = Opcode::PHQL_T_IN;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 113:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -2211,7 +2236,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -2220,15 +2245,16 @@ class Scanner
                         }
                     case 114:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_IS);
+                        $token->opcode = Opcode::PHQL_T_IS;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 115:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 172;
                                 break 2;
                             default:
@@ -2236,11 +2262,11 @@ class Scanner
                                 break 2;
                         }
                     case 116:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'F':
                             case 'f':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 173;
                                 break 2;
                             default:
@@ -2248,16 +2274,16 @@ class Scanner
                                 break 2;
                         }
                     case 117:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'K':
                             case 'k':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 174;
                                 break 2;
                             case 'M':
                             case 'm':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 175;
                                 break 2;
                             default:
@@ -2265,11 +2291,11 @@ class Scanner
                                 break 2;
                         }
                     case 118:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 176;
                                 break 2;
                             default:
@@ -2277,11 +2303,11 @@ class Scanner
                                 break 2;
                         }
                     case 119:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 178;
                                 break 2;
                             default:
@@ -2289,11 +2315,11 @@ class Scanner
                                 break 2;
                         }
                     case 120:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'F':
                             case 'f':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 179;
                                 break 2;
                             default:
@@ -2301,7 +2327,7 @@ class Scanner
                                 break 2;
                         }
                     case 121:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -2368,7 +2394,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -2377,11 +2403,12 @@ class Scanner
                         }
                     case 122:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_ON);
+                        $token->opcode = Opcode::PHQL_T_ON;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 123:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -2446,12 +2473,12 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             case 'D':
                             case 'd':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 180;
                                 break 2;
                             default:
@@ -2460,15 +2487,16 @@ class Scanner
                         }
                     case 124:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_OR);
+                        $token->opcode = Opcode::PHQL_T_OR;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 125:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 181;
                                 break 2;
                             default:
@@ -2476,11 +2504,11 @@ class Scanner
                                 break 2;
                         }
                     case 126:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'G':
                             case 'g':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 182;
                                 break 2;
                             default:
@@ -2488,16 +2516,16 @@ class Scanner
                                 break 2;
                         }
                     case 127:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 183;
                                 break 2;
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 184;
                                 break 2;
                             default:
@@ -2505,11 +2533,11 @@ class Scanner
                                 break 2;
                         }
                     case 128:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 186;
                                 break 2;
                             default:
@@ -2517,11 +2545,11 @@ class Scanner
                                 break 2;
                         }
                     case 129:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'U':
                             case 'u':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 187;
                                 break 2;
                             default:
@@ -2529,11 +2557,11 @@ class Scanner
                                 break 2;
                         }
                     case 130:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'D':
                             case 'd':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 188;
                                 break 2;
                             default:
@@ -2541,11 +2569,11 @@ class Scanner
                                 break 2;
                         }
                     case 131:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 189;
                                 break 2;
                             default:
@@ -2553,11 +2581,11 @@ class Scanner
                                 break 2;
                         }
                     case 132:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 190;
                                 break 2;
                             default:
@@ -2565,11 +2593,11 @@ class Scanner
                                 break 2;
                         }
                     case 133:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 191;
                                 break 2;
                             default:
@@ -2577,11 +2605,11 @@ class Scanner
                                 break 2;
                         }
                     case 134:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 192;
                                 break 2;
                             default:
@@ -2589,9 +2617,9 @@ class Scanner
                                 break 2;
                         }
                     case 135:
-                        $yych    = $this->state->getStart();
+                        $yych    = $yyinput[$yycursor];
                         $yystate = 136;
-                        break;
+                        break 2;
                     case 136:
                         switch ($yych) {
                             case 0x00:
@@ -2631,20 +2659,20 @@ class Scanner
                                 $yystate = 69;
                                 break 2;
                             case '\\':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 137;
                                 break 2;
                             case ']':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 138;
                                 break 2;
                             default:
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 135;
                                 break 2;
                         }
                     case 137:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 0x00:
                             case 0x01:
@@ -2682,31 +2710,32 @@ class Scanner
                                 $yystate = 69;
                                 break 2;
                             case '\\':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 137;
                                 break 2;
                             case ']':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 193;
                                 break 2;
                             default:
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 135;
                                 break 2;
                         }
                     case 138:
                         $yystate = 139;
-                        break;
+                        break 2;
                     case 139:
-                        $this->token->setOpcode(Opcode::PHQL_T_IDENTIFIER);
-                        $this->token->setValue(
-                            substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                        );
-                        $this->start = $this->state->getCursor();
+
+                        $token->opcode = Opcode::PHQL_T_IDENTIFIER;
+                        $token->value  = substr($yyinput, $q, $yycursor - $q - 1);
+                        $token->len    = $yycursor - $q - 1;
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 140:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '-':
                             case '0':
@@ -2773,11 +2802,11 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 140;
                                 break 2;
                             case '}':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 194;
                                 break 2;
                             default:
@@ -2785,23 +2814,26 @@ class Scanner
                                 break 2;
                         }
                     case 141:
-                        $this->token->setOpcode(Opcode::PHQL_T_TS_OR);
+
+                        $token->opcode = Opcode::PHQL_T_TS_OR;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 142:
-                        $this->token->setOpcode(Opcode::PHQL_T_SPLACEHOLDER);
-                        $this->token->setValue(
-                            substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                        );
-                        $this->start = $this->state->getCursor();
+
+                        $token->opcode = Opcode::PHQL_T_SPLACEHOLDER;
+                        $token->value  = substr($yyinput, $q, $yycursor - $q - 1);
+                        $token->len    = $yycursor - $q - 1;
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 143:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 195;
                                 break 2;
                             default:
@@ -2809,7 +2841,7 @@ class Scanner
                                 break 2;
                         }
                     case 144:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -2876,7 +2908,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -2885,11 +2917,12 @@ class Scanner
                         }
                     case 145:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_ALL);
+                        $token->opcode = Opcode::PHQL_T_ALL;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 146:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -2956,7 +2989,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -2965,11 +2998,12 @@ class Scanner
                         }
                     case 147:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_AND);
+                        $token->opcode = Opcode::PHQL_T_AND;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 148:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -3036,7 +3070,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -3045,15 +3079,16 @@ class Scanner
                         }
                     case 149:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_ASC);
+                        $token->opcode = Opcode::PHQL_T_ASC;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 150:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'W':
                             case 'w':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 196;
                                 break 2;
                             default:
@@ -3061,16 +3096,16 @@ class Scanner
                                 break 2;
                         }
                     case 151:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 197;
                                 break 2;
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 199;
                                 break 2;
                             default:
@@ -3078,11 +3113,11 @@ class Scanner
                                 break 2;
                         }
                     case 152:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'V':
                             case 'v':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 201;
                                 break 2;
                             default:
@@ -3090,11 +3125,11 @@ class Scanner
                                 break 2;
                         }
                     case 153:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 202;
                                 break 2;
                             default:
@@ -3102,11 +3137,11 @@ class Scanner
                                 break 2;
                         }
                     case 154:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 203;
                                 break 2;
                             default:
@@ -3114,11 +3149,11 @@ class Scanner
                                 break 2;
                         }
                     case 155:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'C':
                             case 'c':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 204;
                                 break 2;
                             default:
@@ -3126,11 +3161,11 @@ class Scanner
                                 break 2;
                         }
                     case 156:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 206;
                                 break 2;
                             default:
@@ -3138,11 +3173,11 @@ class Scanner
                                 break 2;
                         }
                     case 157:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 207;
                                 break 2;
                             default:
@@ -3150,7 +3185,7 @@ class Scanner
                                 break 2;
                         }
                     case 158:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -3217,7 +3252,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -3226,15 +3261,16 @@ class Scanner
                         }
                     case 159:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_END);
+                        $token->opcode = Opcode::PHQL_T_END;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 160:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 209;
                                 break 2;
                             default:
@@ -3242,11 +3278,11 @@ class Scanner
                                 break 2;
                         }
                     case 161:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 210;
                                 break 2;
                             default:
@@ -3254,7 +3290,7 @@ class Scanner
                                 break 2;
                         }
                     case 162:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -3321,7 +3357,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -3330,15 +3366,16 @@ class Scanner
                         }
                     case 163:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_FOR);
+                        $token->opcode = Opcode::PHQL_T_FOR;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 164:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'M':
                             case 'm':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 211;
                                 break 2;
                             default:
@@ -3346,11 +3383,11 @@ class Scanner
                                 break 2;
                         }
                     case 165:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 213;
                                 break 2;
                             default:
@@ -3358,11 +3395,11 @@ class Scanner
                                 break 2;
                         }
                     case 166:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'U':
                             case 'u':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 215;
                                 break 2;
                             default:
@@ -3370,11 +3407,11 @@ class Scanner
                                 break 2;
                         }
                     case 167:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 216;
                                 break 2;
                             default:
@@ -3382,11 +3419,11 @@ class Scanner
                                 break 2;
                         }
                     case 168:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'K':
                             case 'k':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 217;
                                 break 2;
                             default:
@@ -3394,11 +3431,11 @@ class Scanner
                                 break 2;
                         }
                     case 169:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 218;
                                 break 2;
                             default:
@@ -3406,11 +3443,11 @@ class Scanner
                                 break 2;
                         }
                     case 170:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 219;
                                 break 2;
                             default:
@@ -3418,11 +3455,11 @@ class Scanner
                                 break 2;
                         }
                     case 171:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'O':
                             case 'o':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 220;
                                 break 2;
                             default:
@@ -3430,11 +3467,11 @@ class Scanner
                                 break 2;
                         }
                     case 172:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 222;
                                 break 2;
                             default:
@@ -3442,11 +3479,11 @@ class Scanner
                                 break 2;
                         }
                     case 173:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 224;
                                 break 2;
                             default:
@@ -3454,11 +3491,11 @@ class Scanner
                                 break 2;
                         }
                     case 174:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 226;
                                 break 2;
                             default:
@@ -3466,11 +3503,11 @@ class Scanner
                                 break 2;
                         }
                     case 175:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 228;
                                 break 2;
                             default:
@@ -3479,11 +3516,11 @@ class Scanner
                         }
                     case 176:
                         $yyaccept = 2;
-                        $yymarker = $this->state->getCursor();
-                        $yych     = $this->state->getStart();
+                        $yymarker = $yycursor;
+                        $yych     = $yyinput[$yycursor];
                         switch ($yych) {
                             case ' ':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 229;
                                 break 2;
                             case '0':
@@ -3551,7 +3588,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -3560,15 +3597,16 @@ class Scanner
                         }
                     case 177:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_NOT);
+                        $token->opcode = Opcode::PHQL_T_NOT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 178:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'L':
                             case 'l':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 230;
                                 break 2;
                             default:
@@ -3576,11 +3614,11 @@ class Scanner
                                 break 2;
                         }
                     case 179:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 232;
                                 break 2;
                             default:
@@ -3588,11 +3626,11 @@ class Scanner
                                 break 2;
                         }
                     case 180:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 233;
                                 break 2;
                             default:
@@ -3600,11 +3638,11 @@ class Scanner
                                 break 2;
                         }
                     case 181:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 234;
                                 break 2;
                             default:
@@ -3612,11 +3650,11 @@ class Scanner
                                 break 2;
                         }
                     case 182:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'H':
                             case 'h':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 235;
                                 break 2;
                             default:
@@ -3624,11 +3662,11 @@ class Scanner
                                 break 2;
                         }
                     case 183:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 236;
                                 break 2;
                             default:
@@ -3636,7 +3674,7 @@ class Scanner
                                 break 2;
                         }
                     case 184:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -3703,7 +3741,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -3712,15 +3750,16 @@ class Scanner
                         }
                     case 185:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_SET);
+                        $token->opcode = Opcode::PHQL_T_SET;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 186:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 237;
                                 break 2;
                             default:
@@ -3728,11 +3767,11 @@ class Scanner
                                 break 2;
                         }
                     case 187:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 239;
                                 break 2;
                             default:
@@ -3740,11 +3779,11 @@ class Scanner
                                 break 2;
                         }
                     case 188:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'A':
                             case 'a':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 241;
                                 break 2;
                             default:
@@ -3752,11 +3791,11 @@ class Scanner
                                 break 2;
                         }
                     case 189:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 242;
                                 break 2;
                             default:
@@ -3764,11 +3803,11 @@ class Scanner
                                 break 2;
                         }
                     case 190:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'U':
                             case 'u':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 243;
                                 break 2;
                             default:
@@ -3776,16 +3815,16 @@ class Scanner
                                 break 2;
                         }
                     case 191:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 244;
                                 break 2;
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 246;
                                 break 2;
                             default:
@@ -3793,11 +3832,11 @@ class Scanner
                                 break 2;
                         }
                     case 192:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'H':
                             case 'h':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 247;
                                 break 2;
                             default:
@@ -3806,8 +3845,8 @@ class Scanner
                         }
                     case 193:
                         $yyaccept = 3;
-                        $yymarker = $this->state->getCursor();
-                        $yych     = $this->state->getStart();
+                        $yymarker = $yycursor;
+                        $yych     = $yyinput[$yycursor];
                         switch ($yych) {
                             case 0x00:
                             case 0x01:
@@ -3846,32 +3885,33 @@ class Scanner
                                 $yystate = 139;
                                 break 2;
                             case '\\':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 137;
                                 break 2;
                             case ']':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 138;
                                 break 2;
                             default:
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 135;
                                 break 2;
                         }
                     case 194:
-                        $this->token->setOpcode(Opcode::PHQL_T_BPLACEHOLDER);
-                        $this->token->setValue(
-                            substr($this->state->getRawBuffer(), $this->start, $this->state->getCursor() - $this->start)
-                        );
-                        $this->start = $this->state->getCursor();
+
+                        $token->opcode = Opcode::PHQL_T_BPLACEHOLDER;
+                        $token->value  = substr($yyinput, $q, $yycursor - $q - 1);
+                        $token->len    = $yycursor - $q - 1;
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 195:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 249;
                                 break 2;
                             default:
@@ -3879,11 +3919,11 @@ class Scanner
                                 break 2;
                         }
                     case 196:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 250;
                                 break 2;
                             default:
@@ -3891,7 +3931,7 @@ class Scanner
                                 break 2;
                         }
                     case 197:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -3958,7 +3998,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -3967,11 +4007,12 @@ class Scanner
                         }
                     case 198:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_CASE);
+                        $token->opcode = Opcode::PHQL_T_CASE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 199:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4038,7 +4079,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4047,15 +4088,16 @@ class Scanner
                         }
                     case 200:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_CAST);
+                        $token->opcode = Opcode::PHQL_T_CAST;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 201:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 251;
                                 break 2;
                             default:
@@ -4063,11 +4105,11 @@ class Scanner
                                 break 2;
                         }
                     case 202:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 252;
                                 break 2;
                             default:
@@ -4075,11 +4117,11 @@ class Scanner
                                 break 2;
                         }
                     case 203:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 254;
                                 break 2;
                             default:
@@ -4087,7 +4129,7 @@ class Scanner
                                 break 2;
                         }
                     case 204:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4154,7 +4196,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4163,15 +4205,16 @@ class Scanner
                         }
                     case 205:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_DESC);
+                        $token->opcode = Opcode::PHQL_T_DESC;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 206:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'I':
                             case 'i':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 255;
                                 break 2;
                             default:
@@ -4179,7 +4222,7 @@ class Scanner
                                 break 2;
                         }
                     case 207:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4246,7 +4289,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4255,15 +4298,16 @@ class Scanner
                         }
                     case 208:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_ELSE);
+                        $token->opcode = Opcode::PHQL_T_ELSE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 209:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 256;
                                 break 2;
                             default:
@@ -4271,11 +4315,11 @@ class Scanner
                                 break 2;
                         }
                     case 210:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 257;
                                 break 2;
                             default:
@@ -4283,7 +4327,7 @@ class Scanner
                                 break 2;
                         }
                     case 211:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4350,7 +4394,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4359,11 +4403,12 @@ class Scanner
                         }
                     case 212:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_FROM);
+                        $token->opcode = Opcode::PHQL_T_FROM;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 213:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4430,7 +4475,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4439,15 +4484,16 @@ class Scanner
                         }
                     case 214:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_FULL);
+                        $token->opcode = Opcode::PHQL_T_FULL;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 215:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'P':
                             case 'p':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 259;
                                 break 2;
                             default:
@@ -4455,11 +4501,11 @@ class Scanner
                                 break 2;
                         }
                     case 216:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 261;
                                 break 2;
                             default:
@@ -4467,11 +4513,11 @@ class Scanner
                                 break 2;
                         }
                     case 217:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 262;
                                 break 2;
                             default:
@@ -4479,11 +4525,11 @@ class Scanner
                                 break 2;
                         }
                     case 218:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 264;
                                 break 2;
                             default:
@@ -4491,11 +4537,11 @@ class Scanner
                                 break 2;
                         }
                     case 219:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 266;
                                 break 2;
                             default:
@@ -4503,7 +4549,7 @@ class Scanner
                                 break 2;
                         }
                     case 220:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4570,7 +4616,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4579,11 +4625,12 @@ class Scanner
                         }
                     case 221:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_INTO);
+                        $token->opcode = Opcode::PHQL_T_INTO;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 222:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4650,7 +4697,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4659,11 +4706,12 @@ class Scanner
                         }
                     case 223:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_JOIN);
+                        $token->opcode = Opcode::PHQL_T_JOIN;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 224:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4730,7 +4778,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4739,11 +4787,12 @@ class Scanner
                         }
                     case 225:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_LEFT);
+                        $token->opcode = Opcode::PHQL_T_LEFT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 226:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4810,7 +4859,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4819,15 +4868,16 @@ class Scanner
                         }
                     case 227:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_LIKE);
+                        $token->opcode = Opcode::PHQL_T_LIKE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 228:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 267;
                                 break 2;
                             default:
@@ -4835,11 +4885,11 @@ class Scanner
                                 break 2;
                         }
                     case 229:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'B':
                             case 'b':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 269;
                                 break 2;
                             default:
@@ -4847,7 +4897,7 @@ class Scanner
                                 break 2;
                         }
                     case 230:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -4914,7 +4964,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -4923,15 +4973,16 @@ class Scanner
                         }
                     case 231:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_NULL);
+                        $token->opcode = Opcode::PHQL_T_NULL;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 232:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 270;
                                 break 2;
                             default:
@@ -4939,11 +4990,11 @@ class Scanner
                                 break 2;
                         }
                     case 233:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 271;
                                 break 2;
                             default:
@@ -4951,11 +5002,11 @@ class Scanner
                                 break 2;
                         }
                     case 234:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 273;
                                 break 2;
                             default:
@@ -4963,11 +5014,11 @@ class Scanner
                                 break 2;
                         }
                     case 235:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 275;
                                 break 2;
                             default:
@@ -4975,11 +5026,11 @@ class Scanner
                                 break 2;
                         }
                     case 236:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'C':
                             case 'c':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 277;
                                 break 2;
                             default:
@@ -4987,7 +5038,7 @@ class Scanner
                                 break 2;
                         }
                     case 237:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5054,7 +5105,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5063,11 +5114,12 @@ class Scanner
                         }
                     case 238:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_THEN);
+                        $token->opcode = Opcode::PHQL_T_THEN;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 239:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5134,7 +5186,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5143,15 +5195,16 @@ class Scanner
                         }
                     case 240:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_TRUE);
+                        $token->opcode = Opcode::PHQL_T_TRUE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 241:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 278;
                                 break 2;
                             default:
@@ -5159,11 +5212,11 @@ class Scanner
                                 break 2;
                         }
                     case 242:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'G':
                             case 'g':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 279;
                                 break 2;
                             default:
@@ -5171,11 +5224,11 @@ class Scanner
                                 break 2;
                         }
                     case 243:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 281;
                                 break 2;
                             default:
@@ -5183,7 +5236,7 @@ class Scanner
                                 break 2;
                         }
                     case 244:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5250,7 +5303,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5259,15 +5312,16 @@ class Scanner
                         }
                     case 245:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_WHEN);
+                        $token->opcode = Opcode::PHQL_T_WHEN;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 246:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 282;
                                 break 2;
                             default:
@@ -5275,7 +5329,7 @@ class Scanner
                                 break 2;
                         }
                     case 247:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5342,7 +5396,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5351,15 +5405,16 @@ class Scanner
                         }
                     case 248:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_WITH);
+                        $token->opcode = Opcode::PHQL_T_WITH;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 249:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 284;
                                 break 2;
                             default:
@@ -5367,11 +5422,11 @@ class Scanner
                                 break 2;
                         }
                     case 250:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 285;
                                 break 2;
                             default:
@@ -5379,11 +5434,11 @@ class Scanner
                                 break 2;
                         }
                     case 251:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'R':
                             case 'r':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 286;
                                 break 2;
                             default:
@@ -5391,7 +5446,7 @@ class Scanner
                                 break 2;
                         }
                     case 252:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5458,7 +5513,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5467,15 +5522,16 @@ class Scanner
                         }
                     case 253:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_CROSS);
+                        $token->opcode = Opcode::PHQL_T_CROSS;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 254:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 287;
                                 break 2;
                             default:
@@ -5483,11 +5539,11 @@ class Scanner
                                 break 2;
                         }
                     case 255:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 289;
                                 break 2;
                             default:
@@ -5495,11 +5551,11 @@ class Scanner
                                 break 2;
                         }
                     case 256:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 290;
                                 break 2;
                             default:
@@ -5507,7 +5563,7 @@ class Scanner
                                 break 2;
                         }
                     case 257:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5574,7 +5630,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5583,11 +5639,12 @@ class Scanner
                         }
                     case 258:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_FALSE);
+                        $token->opcode = Opcode::PHQL_T_FALSE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 259:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5654,7 +5711,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5663,15 +5720,16 @@ class Scanner
                         }
                     case 260:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_GROUP);
+                        $token->opcode = Opcode::PHQL_T_GROUP;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 261:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'G':
                             case 'g':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 292;
                                 break 2;
                             default:
@@ -5679,7 +5737,7 @@ class Scanner
                                 break 2;
                         }
                     case 262:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5746,7 +5804,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5755,11 +5813,12 @@ class Scanner
                         }
                     case 263:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_ILIKE);
+                        $token->opcode = Opcode::PHQL_T_ILIKE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 264:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5826,7 +5885,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5835,15 +5894,16 @@ class Scanner
                         }
                     case 265:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_INNER);
+                        $token->opcode = Opcode::PHQL_T_INNER;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 266:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 294;
                                 break 2;
                             default:
@@ -5851,7 +5911,7 @@ class Scanner
                                 break 2;
                         }
                     case 267:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -5918,7 +5978,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -5927,15 +5987,16 @@ class Scanner
                         }
                     case 268:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_LIMIT);
+                        $token->opcode = Opcode::PHQL_T_LIMIT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 269:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 296;
                                 break 2;
                             default:
@@ -5943,11 +6004,11 @@ class Scanner
                                 break 2;
                         }
                     case 270:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 297;
                                 break 2;
                             default:
@@ -5955,7 +6016,7 @@ class Scanner
                                 break 2;
                         }
                     case 271:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6022,7 +6083,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6031,11 +6092,12 @@ class Scanner
                         }
                     case 272:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_ORDER);
+                        $token->opcode = Opcode::PHQL_T_ORDER;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 273:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6102,7 +6164,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6111,11 +6173,12 @@ class Scanner
                         }
                     case 274:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_OUTER);
+                        $token->opcode = Opcode::PHQL_T_OUTER;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 275:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6182,7 +6245,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6191,15 +6254,16 @@ class Scanner
                         }
                     case 276:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_RIGHT);
+                        $token->opcode = Opcode::PHQL_T_RIGHT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 277:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 299;
                                 break 2;
                             default:
@@ -6207,11 +6271,11 @@ class Scanner
                                 break 2;
                         }
                     case 278:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 301;
                                 break 2;
                             default:
@@ -6219,7 +6283,7 @@ class Scanner
                                 break 2;
                         }
                     case 279:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6286,7 +6350,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6295,15 +6359,16 @@ class Scanner
                         }
                     case 280:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_USING);
+                        $token->opcode = Opcode::PHQL_T_USING;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 281:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'S':
                             case 's':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 303;
                                 break 2;
                             default:
@@ -6311,7 +6376,7 @@ class Scanner
                                 break 2;
                         }
                     case 282:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6378,7 +6443,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6387,15 +6452,16 @@ class Scanner
                         }
                     case 283:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_WHERE);
+                        $token->opcode = Opcode::PHQL_T_WHERE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 284:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 305;
                                 break 2;
                             default:
@@ -6403,11 +6469,11 @@ class Scanner
                                 break 2;
                         }
                     case 285:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 307;
                                 break 2;
                             default:
@@ -6415,11 +6481,11 @@ class Scanner
                                 break 2;
                         }
                     case 286:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 309;
                                 break 2;
                             default:
@@ -6427,7 +6493,7 @@ class Scanner
                                 break 2;
                         }
                     case 287:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6494,7 +6560,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6503,15 +6569,16 @@ class Scanner
                         }
                     case 288:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_DELETE);
+                        $token->opcode = Opcode::PHQL_T_DELETE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 289:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'C':
                             case 'c':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 311;
                                 break 2;
                             default:
@@ -6519,7 +6586,7 @@ class Scanner
                                 break 2;
                         }
                     case 290:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6586,7 +6653,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6595,11 +6662,12 @@ class Scanner
                         }
                     case 291:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_EXISTS);
+                        $token->opcode = Opcode::PHQL_T_EXISTS;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 292:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6666,7 +6734,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6675,11 +6743,12 @@ class Scanner
                         }
                     case 293:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_HAVING);
+                        $token->opcode = Opcode::PHQL_T_HAVING;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 294:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6746,7 +6815,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6755,15 +6824,16 @@ class Scanner
                         }
                     case 295:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_INSERT);
+                        $token->opcode = Opcode::PHQL_T_INSERT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 296:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 312;
                                 break 2;
                             default:
@@ -6771,7 +6841,7 @@ class Scanner
                                 break 2;
                         }
                     case 297:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6838,7 +6908,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6847,11 +6917,12 @@ class Scanner
                         }
                     case 298:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_OFFSET);
+                        $token->opcode = Opcode::PHQL_T_OFFSET;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 299:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6918,7 +6989,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -6926,11 +6997,13 @@ class Scanner
                                 break 2;
                         }
                     case 300:
-                        $this->token->setOpcode(Opcode::PHQL_T_SELECT);
+
+                        $token->opcode = Opcode::PHQL_T_SELECT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 301:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -6997,7 +7070,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -7006,11 +7079,12 @@ class Scanner
                         }
                     case 302:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_UPDATE);
+                        $token->opcode = Opcode::PHQL_T_UPDATE;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 303:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -7077,7 +7151,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -7086,11 +7160,12 @@ class Scanner
                         }
                     case 304:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_VALUES);
+                        $token->opcode = Opcode::PHQL_T_VALUES;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 305:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -7157,7 +7232,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -7166,11 +7241,12 @@ class Scanner
                         }
                     case 306:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_AGAINST);
+                        $token->opcode = Opcode::PHQL_T_AGAINST;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 307:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -7237,7 +7313,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -7246,11 +7322,12 @@ class Scanner
                         }
                     case 308:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_BETWEEN);
+                        $token->opcode = Opcode::PHQL_T_BETWEEN;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 309:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -7317,7 +7394,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -7326,15 +7403,16 @@ class Scanner
                         }
                     case 310:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_CONVERT);
+                        $token->opcode = Opcode::PHQL_T_CONVERT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 311:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'T':
                             case 't':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 313;
                                 break 2;
                             default:
@@ -7342,11 +7420,11 @@ class Scanner
                                 break 2;
                         }
                     case 312:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'W':
                             case 'w':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 315;
                                 break 2;
                             default:
@@ -7354,7 +7432,7 @@ class Scanner
                                 break 2;
                         }
                     case 313:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case '0':
                             case '1':
@@ -7421,7 +7499,7 @@ class Scanner
                             case 'x':
                             case 'y':
                             case 'z':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 45;
                                 break 2;
                             default:
@@ -7430,15 +7508,16 @@ class Scanner
                         }
                     case 314:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_DISTINCT);
+                        $token->opcode = Opcode::PHQL_T_DISTINCT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     case 315:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 316;
                                 break 2;
                             default:
@@ -7446,11 +7525,11 @@ class Scanner
                                 break 2;
                         }
                     case 316:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'E':
                             case 'e':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 317;
                                 break 2;
                             default:
@@ -7458,11 +7537,11 @@ class Scanner
                                 break 2;
                         }
                     case 317:
-                        $yych = $this->state->getStart();
+                        $yych = $yyinput[$yycursor];
                         switch ($yych) {
                             case 'N':
                             case 'n':
-                                $this->state->incrementStart();
+                                $yycursor += 1;
                                 $yystate  = 318;
                                 break 2;
                             default:
@@ -7471,7 +7550,8 @@ class Scanner
                         }
                     case 318:
 
-                        $this->token->setOpcode(Opcode::PHQL_T_BETWEEN_NOT);
+                        $token->opcode = Opcode::PHQL_T_BETWEEN_NOT;
+                        $this->state->setCursor($yycursor);
                         return 0;
 
                     default:

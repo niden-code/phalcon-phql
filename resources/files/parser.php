@@ -132,7 +132,8 @@ class phql_Parser
     const PHQL_WHERE = 51;
     const PHQL_WITH = 50;
     const YYERRORSYMBOL = 80;
-    const YYNOCODE = 135;
+    const YYNOCODE   = 135;
+    const YYWILDCARD = 135; /* No %wildcard in this grammar; use YYNOCODE so the wildcard path never matches */
     const YYNRULE = 162;
     const YYNSTATE = 295;
     const YYSTACKDEPTH = 100;
@@ -1027,8 +1028,8 @@ class phql_Parser
         'argument_list_or_null',
         'argument_item',
     ];
-    var $yyTraceFILE = null;
-    var $yyTracePrompt = null;
+    public mixed $yyTraceFILE   = null;
+    public string $yyTracePrompt = '';
     static $yy_action = [
         /*     0 */
         50,
@@ -3393,17 +3394,15 @@ class phql_Parser
 ** Outputs:
 ** None.
 */
-    var /* int */
-        $yyerrcnt;
+    public int $yyerrcnt = -1;
 
     /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
-    var /* int */
-        $yyidx = -1;
+    public int $yyidx = -1;
 
     /* For tracing reduce actions, the names of all rules are required.
 */
-    var $yystack = [];
+    public array $yystack = [];
 
     /*
 ** This function returns the symbolic name associated with a token
@@ -3448,15 +3447,13 @@ class phql_Parser
             $this->YY_ACCEPT_ACTION = self::YYNSTATE + self::YYNRULE + 1;
             $this->YY_ERROR_ACTION = self::YYNSTATE + self::YYNRULE;
         }
-        $yytos = $this->yystack[$this->yyidx];
 
         if ($this->yyTraceFILE) {
-            fprintf(
-                $this->yyTraceFILE,
+            fwrite($this->yyTraceFILE, sprintf(
                 "%sInput %s\n",
                 $this->yyTracePrompt,
-                self::$yyTokenName[$yytos->major]
-            );
+                self::$yyTokenName[$yymajor]
+            ));
         }
 
         do {
@@ -3475,7 +3472,7 @@ class phql_Parser
                 } else {
                     if ($yyact == $this->YY_ERROR_ACTION) {
                         if ($this->yyTraceFILE) {
-                            fprintf($this->yyTraceFILE, "%sSyntax Error!\n", $this->yyTracePrompt);
+                            fwrite($this->yyTraceFILE, sprintf("%sSyntax Error!\n", $this->yyTracePrompt));
                         }
                         if (self::YYERRORSYMBOL) {
                             /**
@@ -3504,12 +3501,11 @@ class phql_Parser
                             $yymx = $this->yystack[$this->yyidx]->major;
                             if ($yymx == self::YYERRORSYMBOL || $yyerrorhit) {
                                 if ($this->yyTraceFILE) {
-                                    fprintf(
-                                        $this->yyTraceFILE,
+                                    fwrite($this->yyTraceFILE, sprintf(
                                         "%sDiscard input token %s\n",
                                         $this->yyTracePrompt,
                                         self::$yyTokenName[$yymajor]
-                                    );
+                                    ));
                                 }
                                 $this->yy_destructor($yymajor, $yyminor);
                                 $yymajor = self::YYNOCODE;
@@ -3619,7 +3615,7 @@ class phql_Parser
     private function yy_accept()
     {
         if ($this->yyTraceFILE) {
-            fprintf($this->yyTraceFILE, "%sAccept!\n", $this->yyTracePrompt);
+            fwrite($this->yyTraceFILE, sprintf("%sAccept!\n", $this->yyTracePrompt));
         }
         while ($this->yyidx >= 0) {
             $this->yy_pop_parser_stack();
@@ -3826,15 +3822,28 @@ class phql_Parser
                     ($iFallback = self::$yyFallback[$iLookAhead]) != 0
                 ) {
                     if ($this->yyTraceFILE) {
-                        fprintf(
-                            $this->yyTraceFILE,
+                        fwrite($this->yyTraceFILE, sprintf(
                             "%sFALLBACK %s => %s\n",
                             $this->yyTracePrompt,
                             self::$yyTokenName[$iLookAhead],
                             self::$yyTokenName[$iFallback]
-                        );
+                        ));
                     }
                     return $this->yy_find_shift_action($iFallback);
+                }
+                {
+                    $j = $i - $iLookAhead + self::YYWILDCARD;
+                    if ($j >= 0 && $j < count(self::$yy_action) && self::$yy_lookahead[$j] == self::YYWILDCARD) {
+                        if ($this->yyTraceFILE) {
+                            fwrite($this->yyTraceFILE, sprintf(
+                                "%sWILDCARD %s => %s\n",
+                                $this->yyTracePrompt,
+                                self::$yyTokenName[$iLookAhead],
+                                self::$yyTokenName[self::YYWILDCARD]
+                            ));
+                        }
+                        return self::$yy_action[$j];
+                    }
                 }
             }
             return self::$yy_default[$stateno];
@@ -3846,7 +3855,7 @@ class phql_Parser
     private function yy_parse_failed(): void
     {
         if ($this->yyTraceFILE) {
-            fprintf($this->yyTraceFILE, "%sFail!\n", $this->yyTracePrompt);
+            fwrite($this->yyTraceFILE, sprintf("%sFail!\n", $this->yyTracePrompt));
         }
         while ($this->yyidx >= 0) {
             $this->yy_pop_parser_stack();
@@ -3862,12 +3871,11 @@ class phql_Parser
         $yytos = $this->yystack[$this->yyidx];
 
         if ($this->yyTraceFILE) {
-            fprintf(
-                $this->yyTraceFILE,
+            fwrite($this->yyTraceFILE, sprintf(
                 "%sPopping %s\n",
                 $this->yyTracePrompt,
-                self::$yyTokenName[$yytos->major],
-            );
+                self::$yyTokenName[$yytos->major]
+            ));
         }
 
         $this->yy_destructor($yytos->major, $yytos->minor);
@@ -3887,12 +3895,11 @@ class phql_Parser
     {
         $yygotominor = [];        /* The LHS of the rule reduced */
         if ($this->yyTraceFILE && isset(self::$yyRuleName[$yyruleno])) {
-            fprintf(
-                $this->yyTraceFILE,
+            fwrite($this->yyTraceFILE, sprintf(
                 "%sReduce [%s].\n",
                 $this->yyTracePrompt,
                 self::$yyRuleName[$yyruleno]
-            );
+            ));
         }
 
         switch ($yyruleno) {
@@ -4801,13 +4808,13 @@ class phql_Parser
         $yytos->major = $yyMajor;
         $yytos->minor = $yypMinor;
         if ($this->yyTraceFILE) {
-            fprintf($this->yyTraceFILE, "%sShift %d\n", $this->yyTracePrompt, $yyNewState);
-            fprintf($this->yyTraceFILE, "%sStack:", $this->yyTracePrompt);
+            fwrite($this->yyTraceFILE, sprintf("%sShift %d\n", $this->yyTracePrompt, $yyNewState));
+            fwrite($this->yyTraceFILE, sprintf("%sStack:", $this->yyTracePrompt));
             for ($i = 1; $i <= $this->yyidx; $i++) {
                 $ent = $this->yystack[$i];
-                fprintf($this->yyTraceFILE, " %s", self::$yyTokenName[$ent->major]);
+                fwrite($this->yyTraceFILE, sprintf(" %s", self::$yyTokenName[$ent->major]));
             }
-            fprintf($this->yyTraceFILE, "\n");
+            fwrite($this->yyTraceFILE, "\n");
         }
     }
 
