@@ -6,6 +6,6 @@ composer.phar
 phql.log
 
 # PHPUnit
-.phpunit.cache/
+.phpunit.result.cache/
 coverage/
 coverage.xml
