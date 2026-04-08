@@ -12,7 +12,11 @@
         "php": ">=8.1",
         "ext-mbstring": "*"
     },
+    "suggest": {
+        "phalcon/phalcon": "The Phalcon framework this module integrates with"
+    },
     "require-dev": {
+        "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^10.5"
     },
     "autoload": {
@@ -25,11 +29,12 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Phalcon\\Phql\\Tests\\": "tests/"
+            "Phalcon\\Phql\\Tests\\": "tests/",
+            "Phalcon\\Phql\\Tests\\Unit\\": "tests/unit/"
         }
     },
     "scripts": {
-        "test": "phpunit",
-        "test:coverage": "phpunit --coverage-html coverage"
+        "test": "vendor/bin/phpunit -c phpunit.xml --fail-on-all-issues",
+        "test-coverage": "vendor/bin/phpunit -c phpunit.xml --coverage-html tests/_output/coverage/"
     }
 }
