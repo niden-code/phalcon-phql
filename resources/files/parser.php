@@ -1029,7 +1029,7 @@ class phql_Parser
         'argument_item',
     ];
     public mixed $yyTraceFILE   = null;
-    public string $yyTracePrompt = '';
+    public ?string $yyTracePrompt = '';
     static $yy_action = [
         /*     0 */
         50,
