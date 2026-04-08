@@ -3,19 +3,19 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
-         cacheDirectory="tests/_output/.phpunit.result.cache"
+         cacheDirectory=".phpunit.cache"
          beStrictAboutOutputDuringTests="false"
          failOnRisky="false"
          failOnWarning="true">
     <testsuites>
-        <testsuite name="PHQL Unit Test Suite">
-            <directory>tests/unit</directory>
+        <testsuite name="PHQL Test Suite">
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
     <source>
         <include>
-            <directory suffix=".php">src</directory>
-            <directory suffix=".php">resources</directory>
+            <directory>src</directory>
+            <directory>resources</directory>
         </include>
     </source>
 </phpunit>
