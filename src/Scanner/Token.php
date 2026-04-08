@@ -7,8 +7,9 @@ namespace Phalcon\Phql\Scanner;
 class Token
 {
     protected int $length = 0;
-    protected mixed $opcode = null;
-    protected mixed $value = null;
+    public int $len = 0;
+    public mixed $opcode = null;
+    public mixed $value = null;
 
     public function getLength(): int
     {

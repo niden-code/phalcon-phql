@@ -10,14 +10,16 @@ class State
     public string $rawBuffer;
     public int $startLength;
     protected int $cursor = 0;
+    private int $bufferLength;
 
     protected ?string $end = null;
     protected ?string $start = null;
 
     public function __construct(string $buffer)
     {
-        $this->rawBuffer   = $buffer;
-        $this->startLength = mb_strlen($buffer);
+        $this->bufferLength = strlen($buffer);
+        $this->rawBuffer    = $buffer . "\0"; // null terminator for look-ahead safety in scanner
+        $this->startLength  = mb_strlen($buffer);
         if ($this->startLength > 0) {
             $this->setStart($buffer[0]);
             $this->setEnd($buffer[0]);
@@ -27,6 +29,11 @@ class State
     public function getActiveToken(): mixed
     {
         return $this->activeToken;
+    }
+
+    public function getBufferLength(): int
+    {
+        return $this->bufferLength;
     }
 
     public function getRawBuffer(): string

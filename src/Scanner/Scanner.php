@@ -29,12 +29,23 @@ class Scanner
     {
         $yyinput  = $this->state->getRawBuffer();
         $yycursor = $this->state->getCursor();
-        $q        = $yycursor;
-        $token    = $this->token;
+
+        if ($yycursor >= $this->state->getBufferLength()) {
+            return self::PHQL_SCANNER_RETCODE_EOF;
+        }
+
+        $q      = $yycursor;
+        $token  = $this->token;
+        $token->value  = null;
+        $token->opcode = null;
+        $token->len    = 0;
         $status = self::PHQL_SCANNER_RETCODE_IMPOSSIBLE;
 
 
         while (self::PHQL_SCANNER_RETCODE_IMPOSSIBLE == $status) {
+            if ($yycursor >= $this->state->getBufferLength()) {
+                return self::PHQL_SCANNER_RETCODE_EOF;
+            }
             $yych     = 0;
             $yyaccept = 0;
             $yystate  = 0;
@@ -47,9 +58,9 @@ class Scanner
                             case 0x00:
                                 $yystate = 1;
                                 break 2;
-                            case '\t':
-                            case '\n':
-                            case '\r':
+                            case "\t":
+                            case "\n":
+                            case "\r":
                             case ' ':
                                 $yystate = 4;
                                 break 2;
@@ -255,9 +266,9 @@ class Scanner
                     case 4:
                         $yych = $yyinput[$yycursor];
                         switch ($yych) {
-                            case '\t':
-                            case '\n':
-                            case '\r':
+                            case "\t":
+                            case "\n":
+                            case "\r":
                             case ' ':
                                 $yycursor += 1;
                                 $yystate  = 4;
@@ -854,9 +865,8 @@ class Scanner
                                 break 2;
                         }
                     case 45:
-                        $yych    = $yyinput[$yycursor];
-                        $yystate = 46;
-                        break 2;
+                        $yych = $yyinput[$yycursor];
+                        // fall through
                     case 46:
                         switch ($yych) {
                             case '0':
@@ -1093,11 +1103,11 @@ class Scanner
                             case 0x06:
                             case 0x07:
                             case 0x08:
-                            case '\t':
-                            case '\n':
-                            case '\v':
-                            case '\f':
-                            case '\r':
+                            case "\t":
+                            case "\n":
+                            case "\v":
+                            case "\f":
+                            case "\r":
                             case 0x0E:
                             case 0x0F:
                             case 0x10:
@@ -1194,9 +1204,8 @@ class Scanner
                         return 0;
 
                     case 59:
-                        $yych    = $yyinput[$yycursor];
-                        $yystate = 60;
-                        break 2;
+                        $yych = $yyinput[$yycursor];
+                        // fall through
                     case 60:
                         switch ($yych) {
                             case '0':
@@ -1387,9 +1396,8 @@ class Scanner
                         return 0;
 
                     case 67:
-                        $yych    = $yyinput[$yycursor];
-                        $yystate = 68;
-                        break 2;
+                        $yych = $yyinput[$yycursor];
+                        // fall through
                     case 68:
                         switch ($yych) {
                             case 0x00:
@@ -1436,7 +1444,7 @@ class Scanner
                     case 71:
                         $yych = $yyinput[$yycursor];
                         switch ($yych) {
-                            case '\n':
+                            case "\n":
                                 $yystate = 69;
                                 break 2;
                             default:
@@ -1451,9 +1459,8 @@ class Scanner
                         return 0;
 
                     case 73:
-                        $yych    = $yyinput[$yycursor];
-                        $yystate = 74;
-                        break 2;
+                        $yych = $yyinput[$yycursor];
+                        // fall through
                     case 74:
                         switch ($yych) {
                             case 0x00:
@@ -1475,7 +1482,7 @@ class Scanner
                     case 75:
                         $yych = $yyinput[$yycursor];
                         switch ($yych) {
-                            case '\n':
+                            case "\n":
                                 $yystate = 69;
                                 break 2;
                             default:
@@ -2617,9 +2624,8 @@ class Scanner
                                 break 2;
                         }
                     case 135:
-                        $yych    = $yyinput[$yycursor];
-                        $yystate = 136;
-                        break 2;
+                        $yych = $yyinput[$yycursor];
+                        // fall through
                     case 136:
                         switch ($yych) {
                             case 0x00:
@@ -2631,11 +2637,11 @@ class Scanner
                             case 0x06:
                             case 0x07:
                             case 0x08:
-                            case '\t':
-                            case '\n':
-                            case '\v':
-                            case '\f':
-                            case '\r':
+                            case "\t":
+                            case "\n":
+                            case "\v":
+                            case "\f":
+                            case "\r":
                             case 0x0E:
                             case 0x0F:
                             case 0x10:
@@ -2683,11 +2689,11 @@ class Scanner
                             case 0x06:
                             case 0x07:
                             case 0x08:
-                            case '\t':
-                            case '\n':
-                            case '\v':
-                            case '\f':
-                            case '\r':
+                            case "\t":
+                            case "\n":
+                            case "\v":
+                            case "\f":
+                            case "\r":
                             case 0x0E:
                             case 0x0F:
                             case 0x10:
@@ -2723,13 +2729,12 @@ class Scanner
                                 break 2;
                         }
                     case 138:
-                        $yystate = 139;
-                        break 2;
+                        // fall through
                     case 139:
 
                         $token->opcode = Opcode::PHQL_T_IDENTIFIER;
-                        $token->value  = substr($yyinput, $q, $yycursor - $q - 1);
-                        $token->len    = $yycursor - $q - 1;
+                        $token->value  = substr($yyinput, $q, $yycursor - $q);
+                        $token->len    = $yycursor - $q;
                         $q = $yycursor;
                         $this->state->setCursor($yycursor);
                         return 0;
@@ -3857,11 +3862,11 @@ class Scanner
                             case 0x06:
                             case 0x07:
                             case 0x08:
-                            case '\t':
-                            case '\n':
-                            case '\v':
-                            case '\f':
-                            case '\r':
+                            case "\t":
+                            case "\n":
+                            case "\v":
+                            case "\f":
+                            case "\r":
                             case 0x0E:
                             case 0x0F:
                             case 0x10:
