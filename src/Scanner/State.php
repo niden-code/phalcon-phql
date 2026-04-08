@@ -7,10 +7,9 @@ namespace Phalcon\Phql\Scanner;
 class State
 {
     public mixed $activeToken = null;
+    public string $rawBuffer;
     public int $startLength;
     protected int $cursor = 0;
-
-    public string $rawBuffer;
 
     protected ?string $end = null;
     protected ?string $start = null;
@@ -28,6 +27,11 @@ class State
     public function getActiveToken(): mixed
     {
         return $this->activeToken;
+    }
+
+    public function getRawBuffer(): string
+    {
+        return $this->rawBuffer;
     }
 
     public function getCursor(): int
@@ -87,10 +91,5 @@ class State
         $this->activeToken = $activeToken;
 
         return $this;
-    }
-
-    public function getRawBuffer(): string
-    {
-        return $this->rawBuffer;
     }
 }
