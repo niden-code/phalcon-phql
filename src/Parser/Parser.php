@@ -185,7 +185,7 @@ class Parser
                     } else {
                         $parserStatus->setSyntaxError("Literals are disabled in PHQL statements");
                         $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
-				    }
+                    }
                     break;
                 case Opcode::PHQL_T_TRUE:
                     if ($parserStatus->getEnableLiterals()) {
@@ -193,7 +193,7 @@ class Parser
                     } else {
                         $parserStatus->setSyntaxError("Literals are disabled in PHQL statements");
                         $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
-				}
+                    }
                     break;
                 case Opcode::PHQL_T_FALSE:
                     if ($parserStatus->getEnableLiterals()) {
@@ -337,7 +337,7 @@ class Parser
                 default:
                     $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
                     $parserStatus->setSyntaxError("Scanner: Unknown opcode %d" . $opcode);
-				break;
+                    break;
             }
 
             if ($parserStatus->getStatus() === Status::PHQL_PARSING_FAILED) {
@@ -347,7 +347,9 @@ class Parser
             $state->setEnd($state->getStart());
         }
 
-        if ($scannerStatus === Scanner::PHQL_SCANNER_RETCODE_ERR || $scannerStatus === Scanner::PHQL_SCANNER_RETCODE_IMPOSSIBLE) {
+        if ($scannerStatus === Scanner::PHQL_SCANNER_RETCODE_ERR
+            || $scannerStatus === Scanner::PHQL_SCANNER_RETCODE_IMPOSSIBLE
+        ) {
             throw new Exception($parserStatus->getSyntaxError());
         } elseif ($scannerStatus === Scanner::PHQL_SCANNER_RETCODE_EOF) {
             $parser->phql_(0);
