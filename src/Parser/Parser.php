@@ -347,7 +347,8 @@ class Parser
             $state->setEnd($state->getStart());
         }
 
-        if ($scannerStatus === Scanner::PHQL_SCANNER_RETCODE_ERR
+        if (
+            $scannerStatus === Scanner::PHQL_SCANNER_RETCODE_ERR
             || $scannerStatus === Scanner::PHQL_SCANNER_RETCODE_IMPOSSIBLE
         ) {
             throw new Exception($parserStatus->getSyntaxError());
