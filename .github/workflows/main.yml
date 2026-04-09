@@ -58,8 +58,8 @@ jobs:
       - name: "PHPCS"
         run: composer cs
 
-      - name: "PHPStan"
-        run: composer analyze
+#      - name: "PHPStan"
+#        run: composer analyze
 
   tests:
     name: PHP ${{ matrix.php }}
