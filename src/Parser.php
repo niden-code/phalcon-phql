@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Phalcon\Phql;
 
+use Phalcon\Phql\Parser\Status;
 use Phalcon\Phql\Scanner\Opcode;
 use Phalcon\Phql\Scanner\Scanner;
 use Phalcon\Phql\Scanner\State;
 use Phalcon\Phql\Scanner\Token;
 use RuntimeException;
-use stdClass;
 
 /**
  * Orchestrates the PHQL lexer and parser, equivalent to
@@ -36,32 +36,22 @@ class Parser
         }
 
         $state   = new State($phql);
-        $token   = new Token();
-        $scanner = new Scanner($state, $token);
-
-        $parserObject = new \phql_Parser();
+        $scanner = new Scanner($state);
+        $token   = $scanner->getToken();
 
         // Status object mirrors phql_parser_status in C
-        $status                  = new stdClass();
-        $status->status          = \phql_Parser::PHQL_PARSING_OK;
-        $status->scanner_state   = $state;
-        $status->ret             = null;
-        $status->syntax_error    = null;
-        $status->token           = $token;
-        $status->enable_literals = $this->enableLiterals;
-        $status->phql            = $phql;
-        $status->phql_length     = mb_strlen($phql);
+        $status = new Status($state);
+        $status->setToken($token);
+        $status->setEnableLiterals($this->enableLiterals);
 
-        $parserObject->status = $status;
+        $parserObject = new \phql_Parser($status);
 
         $errorMsg = null;
         $failed   = false;
 
         while (($scannerStatus = $scanner->scanForToken()) >= 0) {
-            // Equivalent to: state->start_length = (phql + phql_length - state->start)
-            $state->startLength = $status->phql_length - $state->getCursor();
-
-            $state->activeToken = $token->opcode;
+            $state->setStartLength(mb_strlen($phql) - $state->getCursor());
+            $state->setActiveToken($token->opcode);
 
             switch ($token->opcode) {
                 case Opcode::PHQL_T_IGNORE:
@@ -176,7 +166,7 @@ class Parser
                         $parserObject->phql_(\phql_Parser::PHQL_INTEGER, $this->makeParserToken($token));
                     } else {
                         $errorMsg       = 'Literals are disabled in PHQL statements';
-                        $status->status = \phql_Parser::PHQL_PARSING_FAILED;
+                        $status->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
                 case Opcode::PHQL_T_DOUBLE:
@@ -184,7 +174,7 @@ class Parser
                         $parserObject->phql_(\phql_Parser::PHQL_DOUBLE, $this->makeParserToken($token));
                     } else {
                         $errorMsg       = 'Literals are disabled in PHQL statements';
-                        $status->status = \phql_Parser::PHQL_PARSING_FAILED;
+                        $status->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
                 case Opcode::PHQL_T_STRING:
@@ -192,7 +182,7 @@ class Parser
                         $parserObject->phql_(\phql_Parser::PHQL_STRING, $this->makeParserToken($token));
                     } else {
                         $errorMsg       = 'Literals are disabled in PHQL statements';
-                        $status->status = \phql_Parser::PHQL_PARSING_FAILED;
+                        $status->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
                 case Opcode::PHQL_T_TRUE:
@@ -200,7 +190,7 @@ class Parser
                         $parserObject->phql_(\phql_Parser::PHQL_TRUE);
                     } else {
                         $errorMsg       = 'Literals are disabled in PHQL statements';
-                        $status->status = \phql_Parser::PHQL_PARSING_FAILED;
+                        $status->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
                 case Opcode::PHQL_T_FALSE:
@@ -208,7 +198,7 @@ class Parser
                         $parserObject->phql_(\phql_Parser::PHQL_FALSE);
                     } else {
                         $errorMsg       = 'Literals are disabled in PHQL statements';
-                        $status->status = \phql_Parser::PHQL_PARSING_FAILED;
+                        $status->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
                 case Opcode::PHQL_T_HINTEGER:
@@ -216,7 +206,7 @@ class Parser
                         $parserObject->phql_(\phql_Parser::PHQL_HINTEGER, $this->makeParserToken($token));
                     } else {
                         $errorMsg       = 'Literals are disabled in PHQL statements';
-                        $status->status = \phql_Parser::PHQL_PARSING_FAILED;
+                        $status->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
 
@@ -343,12 +333,12 @@ class Parser
                     break;
 
                 default:
-                    $status->status = \phql_Parser::PHQL_PARSING_FAILED;
+                    $status->setStatus(Status::PHQL_PARSING_FAILED);
                     $errorMsg       = sprintf('Scanner: Unknown opcode %d', $token->opcode);
                     break;
             }
 
-            if ($status->status !== \phql_Parser::PHQL_PARSING_OK) {
+            if ($status->getStatus() !== Status::PHQL_PARSING_OK) {
                 $failed = true;
                 break;
             }
@@ -369,12 +359,12 @@ class Parser
             }
         }
 
-        $state->activeToken = 0;
+        $state->setActiveToken(0);
 
-        if ($status->status !== \phql_Parser::PHQL_PARSING_OK) {
+        if ($status->getStatus() !== Status::PHQL_PARSING_OK) {
             $failed = true;
-            if ($status->syntax_error !== null && $errorMsg === null) {
-                $errorMsg = $status->syntax_error;
+            if ($status->getSyntaxError() !== null && $errorMsg === null) {
+                $errorMsg = $status->getSyntaxError();
             }
         }
 
@@ -382,24 +372,25 @@ class Parser
             throw new RuntimeException($errorMsg ?? 'Unknown PHQL parsing error');
         }
 
-        if (!is_array($status->ret)) {
+        $ret = $status->getRet();
+        if (!is_array($ret)) {
             throw new RuntimeException('PHQL parsing produced no result');
         }
 
-        return $status->ret;
+        return $ret;
     }
 
     /**
-     * Wrap a scanner Token into the lightweight token object the parser expects.
+     * Snapshot the current scanner token into a new Token instance so the
+     * parser stack holds stable values (the scanner reuses its token object).
      * Mirrors phql_parse_with_token() in base.c.
      */
-    private function makeParserToken(Token $token): stdClass
+    private function makeParserToken(Token $token): Token
     {
-        $pt            = new stdClass();
-        $pt->opcode    = $token->opcode;
-        $pt->token     = $token->value;
-        $pt->token_len = $token->len;
-        $pt->free_flag = 1;
+        $pt = new Token();
+        $pt->setOpcode($token->opcode);
+        $pt->setValue($token->value);
+        $pt->setLength($token->len);
 
         return $pt;
     }
@@ -407,20 +398,21 @@ class Parser
     /**
      * Mirrors phql_scanner_error_msg() in base.c.
      */
-    private function buildScannerErrorMsg(stdClass $status, string $phql): string
+    private function buildScannerErrorMsg(Status $status, string $phql): string
     {
-        $state = $status->scanner_state;
+        $state      = $status->getState();
+        $phqlLength = mb_strlen($phql);
 
-        if ($state->getStart() !== null && $state->startLength > 0) {
+        if ($state->getStart() !== null && $state->getStartLength() > 0) {
             $startStr = substr($phql, $state->getCursor());
-            if ($state->startLength > 16) {
+            if ($state->getStartLength() > 16) {
                 $errorPart = substr($startStr, 0, 16);
 
                 return sprintf(
                     "Scanning error before '%s...' when parsing: %s (%d)",
                     $errorPart,
                     $phql,
-                    $status->phql_length
+                    $phqlLength
                 );
             }
 
@@ -428,7 +420,7 @@ class Parser
                 "Scanning error before '%s' when parsing: %s (%d)",
                 $startStr,
                 $phql,
-                $status->phql_length
+                $phqlLength
             );
         }
 

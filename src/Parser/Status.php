@@ -12,6 +12,8 @@ class Status
     public const PHQL_PARSING_FAILED = 0;
     public const PHQL_PARSING_OK     = 1;
 
+    protected mixed $ret = null;
+
     protected ?string $syntaxError = null;
 
     protected ?Token $token = null;
@@ -27,6 +29,18 @@ class Status
     public function getState(): State
     {
         return $this->scannerState;
+    }
+
+    public function getRet(): mixed
+    {
+        return $this->ret;
+    }
+
+    public function setRet(mixed $ret): self
+    {
+        $this->ret = $ret;
+
+        return $this;
     }
 
     public function setEnableLiterals(bool $enable): self

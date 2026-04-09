@@ -31,9 +31,9 @@ use Phalcon\Phql\Tokens;
 
 class phql_Parser
 {
-    protected array $output = [];
+    protected mixed $output = [];
 
-    public function getOutput(): array
+    public function getOutput(): mixed
     {
         return $this->output;
     }
@@ -3913,7 +3913,7 @@ class phql_Parser
              */
             case 0:
                 $yygotominor = $this->yystack[$this->yyidx + 0]->minor;
-                //ZVAL_ZVAL($status->ret, $this->yystack[$this->yyidx + 0]->minor, 1, 1);
+                $this->status->setRet($this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 1:
             case 2:
@@ -3971,9 +3971,13 @@ class phql_Parser
                 $this->yy_destructor(30, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 9:
-            case 20:
-            case 27:
-            case 38:
+                // distinct_all ::= (no DISTINCT or ALL keyword) - no distinct
+                $yygotominor = null;
+                break;
+            case 135:
+                // distinct_or_null ::= (no DISTINCT keyword in function call)
+                $yygotominor = null;
+                break;
             case 69:
             case 71:
             case 78:
@@ -3981,8 +3985,14 @@ class phql_Parser
             case 85:
             case 89:
             case 91:
-            case 135:
             case 137:
+                // Empty optional clause (where, limit, order, group, having, for_update, etc.)
+                // Matches cphalcon ZVAL_UNDEF — must be null so phql_ret_*_statement skips adding the key
+                $yygotominor = null;
+                break;
+            case 20:
+            case 27:
+            case 38:
                 $yygotominor = [];
                 break;
             case 10:
@@ -4669,7 +4679,8 @@ class phql_Parser
                 $this->yy_destructor(46, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 134:
-                $yygotominor = 0;
+                // distinct_or_null ::= DISTINCT (DISTINCT keyword present in function call)
+                $yygotominor = true;
                 $this->yy_destructor(29, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 142:
@@ -5101,7 +5112,7 @@ function phql_ret_qualified_name(
 function phql_ret_update_statement(array &$ret, $update, $where = null, $limit = null): void
 {
     $ret = [];
-    $ret['type'] = defined('PHQL_T_UPDATE') ? PHQL_T_UPDATE : 0;
+    $ret['type'] = Opcode::PHQL_T_UPDATE;
     $ret['update'] = $update;
 
     if ($where !== null) {
@@ -5130,7 +5141,7 @@ function phql_ret_update_item(array &$ret, $column, $expr): void
 function phql_ret_delete_statement(array &$ret, $delete, $where = null, $limit = null): void
 {
     $ret = [];
-    $ret['type'] = defined('PHQL_T_DELETE') ? PHQL_T_DELETE : 0;
+    $ret['type'] = Opcode::PHQL_T_DELETE;
     $ret['delete'] = $delete;
 
     if ($where !== null) {
@@ -5194,7 +5205,7 @@ function phql_ret_placeholder_zval(array &$ret, int $type, ?Token $value = null)
 function phql_ret_raw_qualified_name(array &$ret, string $tokenA, ?string $tokenB = null): void
 {
     $ret = [];
-    $ret['type'] = defined('PHQL_T_RAW_QUALIFIED') ? PHQL_T_RAW_QUALIFIED : 0;
+    $ret['type'] = Opcode::PHQL_T_RAW_QUALIFIED;
 
     if ($tokenB !== null) {
         /* Two-part qualified name: domain + name */
@@ -5209,7 +5220,7 @@ function phql_ret_raw_qualified_name(array &$ret, string $tokenA, ?string $token
 function phql_ret_func_call(array  &$ret, $name, $arguments = null, $distinct = null): void
 {
     $ret = [];
-    $ret['type'] = defined('PHQL_T_FCALL') ? PHQL_T_FCALL : 0;
+    $ret['type'] = Opcode::PHQL_T_FCALL;
     $ret['name'] = $name instanceof Token ? $name->getValue() : $name;
 
     if ($arguments !== null) {

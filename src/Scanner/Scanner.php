@@ -55,7 +55,7 @@ class Scanner
                         $yych     = $yyinput[$yycursor];
                         $yycursor += 1;
                         switch ($yych) {
-                            case 0x00:
+                            case "\x00":
                                 $yystate = 1;
                                 break 2;
                             case "\t":
@@ -256,7 +256,7 @@ class Scanner
 
                     case 2:
                         $yystate = 3;
-                        break 2;
+                        break;
                     case 3:
                         $status = self::PHQL_SCANNER_RETCODE_ERR;
                         break;
@@ -304,12 +304,12 @@ class Scanner
                         $yyaccept = 0;
                         $yymarker = $yycursor;
                         $yych     = $yyinput[$yycursor];
-                        if ($yych <= 0x00) {
+                        if ($yych === "\x00") {
                             $yystate = 3;
-                            break 2;
+                            break;
                         }
                         $yystate = 68;
-                        break 2;
+                        break;
                     case 9:
                         $token->opcode = Opcode::PHQL_T_MOD;
                         $this->state->setCursor($yycursor);
@@ -335,12 +335,12 @@ class Scanner
                         $yyaccept = 0;
                         $yymarker = $yycursor;
                         $yych     = $yyinput[$yycursor];
-                        if ($yych <= 0x00) {
+                        if ($yych === "\x00") {
                             $yystate = 3;
-                            break 2;
+                            break;
                         }
                         $yystate = 74;
-                        break 2;
+                        break;
                     case 13:
                         $token->opcode = Opcode::PHQL_T_PARENTHESES_OPEN;
                         $this->state->setCursor($yycursor);
@@ -1073,15 +1073,15 @@ class Scanner
                         $yymarker = $yycursor;
                         $yych     = $yyinput[$yycursor];
                         switch ($yych) {
-                            case 0x00:
-                            case 0x01:
-                            case 0x02:
-                            case 0x03:
-                            case 0x04:
-                            case 0x05:
-                            case 0x06:
-                            case 0x07:
-                            case 0x08:
+                            case "\x00":
+                            case "\x01":
+                            case "\x02":
+                            case "\x03":
+                            case "\x04":
+                            case "\x05":
+                            case "\x06":
+                            case "\x07":
+                            case "\x08":
                             case "\t":
                             case "\n":
                             case "\v":
@@ -1374,7 +1374,7 @@ class Scanner
                         // fall through
                     case 68:
                         switch ($yych) {
-                            case 0x00:
+                            case "\x00":
                                 $yystate = 69;
                                 break 2;
                             case '"':
@@ -1408,8 +1408,10 @@ class Scanner
                         }
                     case 70:
                         $token->opcode = Opcode::PHQL_T_STRING;
-                        $token->value  = substr($yyinput, $q, $yycursor - $q - 1);
-                        $token->len    = $yycursor - $q - 1;
+                        // $yymarker points to position after the opening quote (set in state 8/12)
+                        // $yycursor is past the closing quote; subtract 1 to exclude it
+                        $token->value  = substr($yyinput, $yymarker, $yycursor - $yymarker - 1);
+                        $token->len    = $yycursor - $yymarker - 1;
                         $q = $yycursor;
                         $this->state->setCursor($yycursor);
                         return 0;
@@ -1435,7 +1437,7 @@ class Scanner
                         // fall through
                     case 74:
                         switch ($yych) {
-                            case 0x00:
+                            case "\x00":
                                 $yystate = 69;
                                 break 2;
                             case '\'':
@@ -2593,15 +2595,15 @@ class Scanner
                         // fall through
                     case 136:
                         switch ($yych) {
-                            case 0x00:
-                            case 0x01:
-                            case 0x02:
-                            case 0x03:
-                            case 0x04:
-                            case 0x05:
-                            case 0x06:
-                            case 0x07:
-                            case 0x08:
+                            case "\x00":
+                            case "\x01":
+                            case "\x02":
+                            case "\x03":
+                            case "\x04":
+                            case "\x05":
+                            case "\x06":
+                            case "\x07":
+                            case "\x08":
                             case "\t":
                             case "\n":
                             case "\v":
@@ -2645,15 +2647,15 @@ class Scanner
                     case 137:
                         $yych = $yyinput[$yycursor];
                         switch ($yych) {
-                            case 0x00:
-                            case 0x01:
-                            case 0x02:
-                            case 0x03:
-                            case 0x04:
-                            case 0x05:
-                            case 0x06:
-                            case 0x07:
-                            case 0x08:
+                            case "\x00":
+                            case "\x01":
+                            case "\x02":
+                            case "\x03":
+                            case "\x04":
+                            case "\x05":
+                            case "\x06":
+                            case "\x07":
+                            case "\x08":
                             case "\t":
                             case "\n":
                             case "\v":
@@ -2694,7 +2696,14 @@ class Scanner
                                 break 2;
                         }
                     case 138:
-                        // fall through
+                        // Bracket-enclosed identifier: [name] or [First Name]
+                        // Strip the opening [ and closing ] from the value
+                        $token->opcode = Opcode::PHQL_T_IDENTIFIER;
+                        $token->value  = substr($yyinput, $q + 1, $yycursor - $q - 2);
+                        $token->len    = $yycursor - $q - 2;
+                        $q = $yycursor;
+                        $this->state->setCursor($yycursor);
+                        return 0;
                     case 139:
                         $token->opcode = Opcode::PHQL_T_IDENTIFIER;
                         $token->value  = substr($yyinput, $q, $yycursor - $q);
@@ -2789,8 +2798,9 @@ class Scanner
 
                     case 142:
                         $token->opcode = Opcode::PHQL_T_SPLACEHOLDER;
-                        $token->value  = substr($yyinput, $q, $yycursor - $q - 1);
-                        $token->len    = $yycursor - $q - 1;
+                        // Strip leading ':' — Query.php prepends ':' when building the placeholder
+                        $token->value  = substr($yyinput, $q + 1, $yycursor - $q - 2);
+                        $token->len    = $yycursor - $q - 2;
                         $q = $yycursor;
                         $this->state->setCursor($yycursor);
                         return 0;
@@ -3808,15 +3818,15 @@ class Scanner
                         $yymarker = $yycursor;
                         $yych     = $yyinput[$yycursor];
                         switch ($yych) {
-                            case 0x00:
-                            case 0x01:
-                            case 0x02:
-                            case 0x03:
-                            case 0x04:
-                            case 0x05:
-                            case 0x06:
-                            case 0x07:
-                            case 0x08:
+                            case "\x00":
+                            case "\x01":
+                            case "\x02":
+                            case "\x03":
+                            case "\x04":
+                            case "\x05":
+                            case "\x06":
+                            case "\x07":
+                            case "\x08":
                             case "\t":
                             case "\n":
                             case "\v":
@@ -3859,8 +3869,9 @@ class Scanner
                         }
                     case 194:
                         $token->opcode = Opcode::PHQL_T_BPLACEHOLDER;
-                        $token->value  = substr($yyinput, $q, $yycursor - $q - 1);
-                        $token->len    = $yycursor - $q - 1;
+                        // Strip leading ':' — Query.php handles the ':' prefix separately
+                        $token->value  = substr($yyinput, $q + 1, $yycursor - $q - 2);
+                        $token->len    = $yycursor - $q - 2;
                         $q = $yycursor;
                         $this->state->setCursor($yycursor);
                         return 0;
