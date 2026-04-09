@@ -17,6 +17,50 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
+  # PHP CodeSniffer inspection
+  phpcs:
+    name: "Validate code style"
+
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php:
+          - '8.1'
+          - '8.2'
+          - '8.3'
+          - '8.4'
+          - '8.5'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.EXTENSIONS }}
+          ini-values: apc.enable_cli=on, session.save_path=/tmp
+          tools: pecl
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PHALCON_PATH: ext
+
+      - name: "Install development dependencies with Composer"
+        uses: "ramsey/composer-install@v3"
+        with:
+          composer-options: "--prefer-dist"
+
+      - name: "PHPCS"
+        run: composer cs
+
+#      - name: "PHPStan"
+#        run: composer analyze
+
   tests:
     name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest

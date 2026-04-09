@@ -41,7 +41,7 @@ class Opcode
     public const PHQL_T_ELSE                = 411;
     public const PHQL_T_ENCLOSED            = 356;
     public const PHQL_T_END                 = 412;
-    public const PHQL_T_EQUALS              = '=';
+    public const PHQL_T_EQUALS              = 61; // ord('=')
     public const PHQL_T_EXISTS              = 408;
     public const PHQL_T_EXPR                = 354;
     public const PHQL_T_FALSE               = 335;
@@ -71,7 +71,7 @@ class Opcode
     public const PHQL_T_JOIN                = 318;
     public const PHQL_T_LEFT                = 319;
     public const PHQL_T_LEFTJOIN            = 361;
-    public const PHQL_T_LESS                = '<';
+    public const PHQL_T_LESS                = 60;  // ord('<')
     public const PHQL_T_LESSEQUAL           = 271;
     public const PHQL_T_LIKE                = 268;
     public const PHQL_T_LIMIT               = 312;

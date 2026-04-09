@@ -102,7 +102,7 @@ PHQL;
         $this->assertEquals('inv_total', $result['select']['columns'][0]['column']['arguments'][0]['name']);
         $this->assertEquals('average', $result['select']['columns'][0]['alias']);
 
-        $this->assertEquals('[Phalcon\\Tests\\Models\\Invoices]', $result['select']['tables']['qualifiedName']['name']);
+        $this->assertEquals('Phalcon\\Tests\\Models\\Invoices', $result['select']['tables']['qualifiedName']['name']);
     }
 
     /**
@@ -159,11 +159,11 @@ PHQL;
         $this->assertCount(2, $result['select']['columns']);
         $this->assertEquals('People', $result['select']['columns'][0]['column']['domain']);
         $this->assertEquals('firstName', $result['select']['columns'][0]['column']['name']);
-        $this->assertEquals('[First Name]', $result['select']['columns'][0]['alias']);
+        $this->assertEquals('First Name', $result['select']['columns'][0]['alias']);
 
         $this->assertEquals('People', $result['select']['columns'][1]['column']['domain']);
         $this->assertEquals('lastName', $result['select']['columns'][1]['column']['name']);
-        $this->assertEquals('[Last Name]', $result['select']['columns'][1]['alias']);
+        $this->assertEquals('Last Name', $result['select']['columns'][1]['alias']);
 
         $this->assertEquals('People', $result['select']['tables']['qualifiedName']['name']);
     }
