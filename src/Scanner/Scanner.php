@@ -34,8 +34,9 @@ class Scanner
             return self::PHQL_SCANNER_RETCODE_EOF;
         }
 
-        $q      = $yycursor;
-        $token  = $this->token;
+        $q         = $yycursor;
+        $yymarker  = $yycursor;
+        $token     = $this->token;
         $token->value  = null;
         $token->opcode = null;
         $token->len    = 0;
@@ -780,18 +781,21 @@ class Scanner
                                 break 2;
                         }
                     case 41:
+                        // Use $yymarker (PPMARKER in C re2c) as token start.
+                        // Keyword save-point states (e.g. NOT at state 176) overwrite $yymarker,
+                        // so identifiers like "Notes" yield the post-keyword suffix ("es").
                         $token->opcode = Opcode::PHQL_T_IDENTIFIER;
-                        if (($yycursor - $q) > 1) {
-                            if ($yyinput[$q] === '\\') {
-                                $token->value = substr($yyinput, $q + 1, $yycursor - $q - 1);
-                                $token->len   = $yycursor - $q - 1;
+                        if (($yycursor - $yymarker) > 1) {
+                            if ($yyinput[$yymarker] === '\\') {
+                                $token->value = substr($yyinput, $yymarker + 1, $yycursor - $yymarker - 1);
+                                $token->len   = $yycursor - $yymarker - 1;
                             } else {
-                                $token->value = substr($yyinput, $q, $yycursor - $q);
-                                $token->len   = $yycursor - $q;
+                                $token->value = substr($yyinput, $yymarker, $yycursor - $yymarker);
+                                $token->len   = $yycursor - $yymarker;
                             }
                         } else {
-                            $token->value = substr($yyinput, $q, $yycursor - $q);
-                            $token->len   = $yycursor - $q;
+                            $token->value = substr($yyinput, $yymarker, $yycursor - $yymarker);
+                            $token->len   = $yycursor - $yymarker;
                         }
                         $q = $yycursor;
                         $this->state->setCursor($yycursor);
@@ -2697,10 +2701,11 @@ class Scanner
                         }
                     case 138:
                         // Bracket-enclosed identifier: [name] or [First Name]
-                        // Strip the opening [ and closing ] from the value
+                        // Use $yymarker (set by state 56 after '[', updated by state 193 after '\]')
+                        // so that escaped-bracket sequences correctly yield the post-escape substring.
                         $token->opcode = Opcode::PHQL_T_IDENTIFIER;
-                        $token->value  = substr($yyinput, $q + 1, $yycursor - $q - 2);
-                        $token->len    = $yycursor - $q - 2;
+                        $token->value  = substr($yyinput, $yymarker, $yycursor - $yymarker - 1);
+                        $token->len    = $yycursor - $yymarker - 1;
                         $q = $yycursor;
                         $this->state->setCursor($yycursor);
                         return 0;

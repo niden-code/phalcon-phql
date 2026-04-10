@@ -6,7 +6,7 @@ namespace Phalcon\Phql\Scanner;
 
 class Opcode
 {
-    public const PHQL_T_ADD                 = '+';
+    public const PHQL_T_ADD                 = 43; // ord('+')
 
     /* Literals & Identifiers */
     public const PHQL_T_AGAINST             = 276;
@@ -18,10 +18,10 @@ class Opcode
     /* Operators */
     public const PHQL_T_BETWEEN             = 331;
     public const PHQL_T_BETWEEN_NOT         = 332;
-    public const PHQL_T_BITWISE_AND         = '&';
-    public const PHQL_T_BITWISE_NOT         = '~';
-    public const PHQL_T_BITWISE_OR          = '|';
-    public const PHQL_T_BITWISE_XOR         = '^';
+    public const PHQL_T_BITWISE_AND         = 38;  // ord('&')
+    public const PHQL_T_BITWISE_NOT         = 126; // ord('~')
+    public const PHQL_T_BITWISE_OR          = 124; // ord('|')
+    public const PHQL_T_BITWISE_XOR         = 94;  // ord('^')
     public const PHQL_T_BPLACEHOLDER        = 277;
     public const PHQL_T_BY                  = 311;
     public const PHQL_T_CASE                = 409;
@@ -34,7 +34,7 @@ class Opcode
     public const PHQL_T_DELETE              = 303;
     public const PHQL_T_DESC                = 328;
     public const PHQL_T_DISTINCT            = 330;
-    public const PHQL_T_DIV                 = '/';
+    public const PHQL_T_DIV                 = 47;  // ord('/')
     public const PHQL_T_DOMAINALL           = 353;
     public const PHQL_T_DOT                 = '.';
     public const PHQL_T_DOUBLE              = 259;
@@ -51,7 +51,7 @@ class Opcode
     public const PHQL_T_FROM                = 304;
     public const PHQL_T_FULL                = 325;
     public const PHQL_T_FULLJOIN            = 364;
-    public const PHQL_T_GREATER             = '>';
+    public const PHQL_T_GREATER             = 62;  // ord('>')
     public const PHQL_T_GREATEREQUAL        = 272;
     public const PHQL_T_GROUP               = 313;
     public const PHQL_T_HAVING              = 314;
@@ -76,11 +76,11 @@ class Opcode
     public const PHQL_T_LIKE                = 268;
     public const PHQL_T_LIMIT               = 312;
     public const PHQL_T_MINUS               = 367;
-    public const PHQL_T_MOD                 = '%';
-    public const PHQL_T_MUL                 = '*';
+    public const PHQL_T_MOD                 = 37;  // ord('%')
+    public const PHQL_T_MUL                 = 42;  // ord('*')
     public const PHQL_T_NILIKE              = 357;
     public const PHQL_T_NLIKE               = 351;
-    public const PHQL_T_NOT                 = '!';
+    public const PHQL_T_NOT                 = 33;  // ord('!')
     public const PHQL_T_NOTEQUALS           = 270;
     public const PHQL_T_NOTIN               = 323;
     /** Placeholders */
@@ -102,7 +102,7 @@ class Opcode
     public const PHQL_T_SPLACEHOLDER        = 274;
     public const PHQL_T_STARALL             = 352;
     public const PHQL_T_STRING              = 260;
-    public const PHQL_T_SUB                 = '-';
+    public const PHQL_T_SUB                 = 45;  // ord('-')
     public const PHQL_T_SUBQUERY            = 407;
     public const PHQL_T_THEN                = 413;
     public const PHQL_T_TRUE                = 334;
