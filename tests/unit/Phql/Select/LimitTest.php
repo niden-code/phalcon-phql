@@ -132,6 +132,44 @@ final class LimitTest extends AbstractUnitTestCase
      * @return void
      *
      * @author Phalcon Team <team@phalcon.io>
+     * @issue  1
+     * @since  2026-04-11
+     */
+    public function testMvcModelQueryPhqlSelectLimitAliasedDomainAll(): void
+    {
+        $source   = "SELECT r.* FROM Robots r LIMIT 10";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::DOMAINALL->value,
+                        'column' => 'r',
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Robots',
+                    ],
+                    'alias'         => 'r',
+                ],
+            ],
+            'limit'  => [
+                'number' => [
+                    'type' => Opcode::INTEGER->value,
+                    'value' => '10',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
     public function testMvcModelQueryPhqlSelectLimitBoth(): void

@@ -23,6 +23,52 @@ final class BracketsWithSpaceNameTest extends AbstractUnitTestCase
      * @return void
      *
      * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-11
+     */
+    public function testMvcModelQueryPhqlSelectBracketsColumnAliasSpaced(): void
+    {
+        $source   = "SELECT People.firstName AS [First Name], "
+            . "People.lastName AS [Last Name] "
+            . "FROM People";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type'   => Opcode::QUALIFIED->value,
+                            'domain' => 'People',
+                            'name'   => 'firstName',
+                        ],
+                        'alias'  => 'First Name',
+                    ],
+                    1 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type'   => Opcode::QUALIFIED->value,
+                            'domain' => 'People',
+                            'name'   => 'lastName',
+                        ],
+                        'alias'  => 'Last Name',
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'People',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
     public function testMvcModelQueryPhqlSelectBracketsFieldSpaces(): void

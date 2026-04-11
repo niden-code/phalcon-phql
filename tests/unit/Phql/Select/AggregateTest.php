@@ -62,6 +62,48 @@ final class AggregateTest extends AbstractUnitTestCase
      * @return void
      *
      * @author Phalcon Team <team@phalcon.io>
+     * @issue  3
+     * @since  2026-04-11
+     */
+    public function testMvcModelQueryPhqlSelectAvgFieldAliasFqcn(): void
+    {
+        $source   = "SELECT AVG(inv_total) AS average "
+            . "FROM [Phalcon\\Tests\\Models\\Invoices]";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type'      => Opcode::FCALL->value,
+                            'name'      => 'AVG',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_total',
+                                ],
+                            ],
+                        ],
+                        'alias'  => 'average',
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Phalcon\\Tests\\Models\\Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
     public function testMvcModelQueryPhqlSelectCount(): void

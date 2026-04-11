@@ -19,7 +19,7 @@ class Status
     private ?Token $token = null;
 
     public function __construct(
-        private State $scannerState,
+        private readonly State $scannerState,
         private int $status = self::PHQL_PARSING_OK,
     ) {
     }

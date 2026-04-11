@@ -13,7 +13,7 @@ class Scanner
 {
     private Token $token;
 
-    public function __construct(private State $state)
+    public function __construct(private readonly State $state)
     {
         $this->token = new Token();
     }
