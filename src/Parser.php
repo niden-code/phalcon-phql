@@ -19,13 +19,6 @@ final class Parser
 {
     private bool $enableLiterals = true;
 
-    public function setEnableLiterals(bool $enable): static
-    {
-        $this->enableLiterals = $enable;
-
-        return $this;
-    }
-
     /**
      * Parse a PHQL string and return the AST array.
      *
@@ -200,24 +193,17 @@ final class Parser
         /** @var array<string, mixed>|null $ast */
         $ast = $status->getAst();
         if (!is_array($ast)) {
-            throw new Exception('PHQL parsing produced no result');
+            throw new Exception('PHQL parsing produced no result'); // @codeCoverageIgnore
         }
 
         return $ast;
     }
 
-    /**
-     * Snapshot the current scanner token into a new Token instance so the
-     * parser stack holds stable values (the scanner reuses its token object).
-     * Mirrors phql_parse_with_token() in base.c.
-     */
-    private function makeParserToken(Token $token): Token
+    public function setEnableLiterals(bool $enable): static
     {
-        return new Token(
-            $token->opcode,
-            $token->value,
-            $token->length,
-        );
+        $this->enableLiterals = $enable;
+
+        return $this;
     }
 
     /**
@@ -249,7 +235,7 @@ final class Parser
             );
         }
 
-        return 'Scanning error near to EOF';
+        return 'Scanning error near to EOF'; // @codeCoverageIgnore
     }
 
     private function handleLiteralsDisabled(Status $status): void
@@ -264,6 +250,20 @@ final class Parser
 
         throw new Exception(
             sprintf('Scanner: Unknown opcode %d', $opcode->value ?? 0)
+        );
+    }
+
+    /**
+     * Snapshot the current scanner token into a new Token instance so the
+     * parser stack holds stable values (the scanner reuses its token object).
+     * Mirrors phql_parse_with_token() in base.c.
+     */
+    private function makeParserToken(Token $token): Token
+    {
+        return new Token(
+            $token->opcode,
+            $token->value,
+            $token->length,
         );
     }
 }

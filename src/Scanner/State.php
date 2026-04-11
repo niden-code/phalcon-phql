@@ -6,13 +6,13 @@ namespace Phalcon\Phql\Scanner;
 
 class State
 {
+    public readonly string $rawBuffer;
+    public int $startLength;
+
     private ?Opcode $activeToken = null;
     private readonly int $bufferLength;
-
     private int $cursor = 0;
-    public readonly string $rawBuffer;
     private ?string $start = null;
-    public int $startLength;
 
     public function __construct(string $buffer)
     {
