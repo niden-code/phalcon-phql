@@ -15,7 +15,9 @@
     <source>
         <include>
             <directory>src</directory>
-            <directory>resources</directory>
         </include>
+        <exclude>
+            <file>resources/files/parser.php</file>
+        </exclude>
     </source>
 </phpunit>

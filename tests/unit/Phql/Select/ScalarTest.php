@@ -1,0 +1,521 @@
+<?php
+
+/**
+ * This file is part of the Phalcon Framework.
+ *
+ * (c) Phalcon Team <team@phalcon.io>
+ *
+ * For the full copyright and license information, please view the LICENSE.txt
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Phalcon\Phql\Tests\Unit\Phql\Select;
+
+use Phalcon\Phql\Parser;
+use Phalcon\Phql\Scanner\Opcode;
+use Phalcon\Phql\Tests\AbstractUnitTestCase;
+
+final class ScalarTest extends AbstractUnitTestCase
+{
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectAbs(): void
+    {
+        $source   = "SELECT ABS(inv_total) FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'ABS',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_total',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectCoalesce(): void
+    {
+        $source   = "SELECT COALESCE(inv_title, 'N/A') FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'COALESCE',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_title',
+                                ],
+                                1 => [
+                                    'type' => Opcode::STRING->value,
+                                    'value' => 'N/A',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectConcat(): void
+    {
+        $source   = "SELECT CONCAT(inv_title, ' - paid') FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'CONCAT',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_title',
+                                ],
+                                1 => [
+                                    'type' => Opcode::STRING->value,
+                                    'value' => ' - paid',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectIfnull(): void
+    {
+        $source   = "SELECT IFNULL(inv_title, 'N/A') FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'IFNULL',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_title',
+                                ],
+                                1 => [
+                                    'type' => Opcode::STRING->value,
+                                    'value' => 'N/A',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectLength(): void
+    {
+        $source   = "SELECT LENGTH(inv_title) FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'LENGTH',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_title',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectLower(): void
+    {
+        $source   = "SELECT LOWER(inv_title) FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'LOWER',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_title',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectMonthCount(): void
+    {
+        $source   = "SELECT MONTH(inv_created_at), COUNT(*) FROM Invoices GROUP BY MONTH(inv_created_at)";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select'  => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'MONTH',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_created_at',
+                                ],
+                            ],
+                        ],
+                    ],
+                    1 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'COUNT',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::STARALL->value,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'groupBy' => [
+                'type' => Opcode::FCALL->value,
+                'name'      => 'MONTH',
+                'arguments' => [
+                    0 => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_created_at',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectNow(): void
+    {
+        $source   = "SELECT NOW() FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name' => 'NOW',
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectRound(): void
+    {
+        $source   = "SELECT ROUND(inv_total, 2) FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'ROUND',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_total',
+                                ],
+                                1 => [
+                                    'type' => Opcode::INTEGER->value,
+                                    'value' => '2',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectTrim(): void
+    {
+        $source   = "SELECT TRIM(inv_title) FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'TRIM',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_title',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectUpper(): void
+    {
+        $source   = "SELECT UPPER(inv_title) FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'UPPER',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_title',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectYear(): void
+    {
+        $source   = "SELECT YEAR(inv_created_at) FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::FCALL->value,
+                            'name'      => 'YEAR',
+                            'arguments' => [
+                                0 => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_created_at',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+}

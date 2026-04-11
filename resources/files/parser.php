@@ -3913,7 +3913,7 @@ class phql_Parser
              */
             case 0:
                 $yygotominor = $this->yystack[$this->yyidx + 0]->minor;
-                $this->status->setRet($this->yystack[$this->yyidx + 0]->minor);
+                $this->status->setAst($this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 1:
             case 2:
@@ -4022,13 +4022,13 @@ class phql_Parser
                 break;
             case 12:
             case 140:
-                phql_ret_column_item($yygotominor, Opcode::PHQL_T_STARALL);
+                phql_ret_column_item($yygotominor, Opcode::STARALL->value);
                 $this->yy_destructor(18, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 13:
                 phql_ret_column_item(
                     $yygotominor,
-                    Opcode::PHQL_T_DOMAINALL,
+                    Opcode::DOMAINALL->value,
                     null,
                     $this->yystack[$this->yyidx + -2]->minor,
                 );
@@ -4038,7 +4038,7 @@ class phql_Parser
             case 14:
                 phql_ret_column_item(
                     $yygotominor,
-                    Opcode::PHQL_T_EXPR,
+                    Opcode::EXPR->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     null,
                     $this->yystack[$this->yyidx + 0]->minor
@@ -4048,7 +4048,7 @@ class phql_Parser
             case 15:
                 phql_ret_column_item(
                     $yygotominor,
-                    Opcode::PHQL_T_EXPR,
+                    Opcode::EXPR->value,
                     $this->yystack[$this->yyidx + -1]->minor,
                     null,
                     $this->yystack[$this->yyidx + 0]->minor
@@ -4057,7 +4057,7 @@ class phql_Parser
             case 16:
                 phql_ret_column_item(
                     $yygotominor,
-                    Opcode::PHQL_T_EXPR,
+                    Opcode::EXPR->value,
                     $this->yystack[$this->yyidx + 0]->minor,
                 );
                 break;
@@ -4089,50 +4089,50 @@ class phql_Parser
                 phql_ret_qualified_name($yygotominor, null, null, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 28:
-                $yygotominor = Opcode::PHQL_T_INNERJOIN;
+                $yygotominor = Opcode::INNERJOIN->value;
                 $this->yy_destructor(34, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 29:
-                $yygotominor = Opcode::PHQL_T_CROSSJOIN;
+                $yygotominor = Opcode::CROSSJOIN->value;
                 $this->yy_destructor(36, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 30:
-                $yygotominor = Opcode::PHQL_T_LEFTJOIN;
+                $yygotominor = Opcode::LEFTJOIN->value;
                 $this->yy_destructor(37, $this->yystack[$this->yyidx + -2]->minor);
                 $this->yy_destructor(38, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 31:
-                $yygotominor = Opcode::PHQL_T_LEFTJOIN;
+                $yygotominor = Opcode::LEFTJOIN->value;
                 $this->yy_destructor(37, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 32:
-                $yygotominor = Opcode::PHQL_T_RIGHTJOIN;
+                $yygotominor = Opcode::RIGHTJOIN->value;
                 $this->yy_destructor(39, $this->yystack[$this->yyidx + -2]->minor);
                 $this->yy_destructor(38, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 33:
-                $yygotominor = Opcode::PHQL_T_RIGHTJOIN;
+                $yygotominor = Opcode::RIGHTJOIN->value;
                 $this->yy_destructor(39, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 34:
-                $yygotominor = Opcode::PHQL_T_FULLJOIN;
+                $yygotominor = Opcode::FULLJOIN->value;
                 $this->yy_destructor(40, $this->yystack[$this->yyidx + -2]->minor);
                 $this->yy_destructor(38, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 35:
-                $yygotominor = Opcode::PHQL_T_FULLJOIN;
+                $yygotominor = Opcode::FULLJOIN->value;
                 $this->yy_destructor(40, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 36:
-                $yygotominor = Opcode::PHQL_T_INNERJOIN;
+                $yygotominor = Opcode::INNERJOIN->value;
                 $this->yy_destructor(35, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 37:
@@ -4298,11 +4298,11 @@ class phql_Parser
                 phql_ret_order_item($yygotominor, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 75:
-                phql_ret_order_item($yygotominor, $this->yystack[$this->yyidx + -1]->minor, Opcode::PHQL_T_ASC);
+                phql_ret_order_item($yygotominor, $this->yystack[$this->yyidx + -1]->minor, Opcode::ASC->value);
                 $this->yy_destructor(54, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 76:
-                phql_ret_order_item($yygotominor, $this->yystack[$this->yyidx + -1]->minor, Opcode::PHQL_T_DESC);
+                phql_ret_order_item($yygotominor, $this->yystack[$this->yyidx + -1]->minor, Opcode::DESC->value);
                 $this->yy_destructor(55, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 77:
@@ -4346,7 +4346,7 @@ class phql_Parser
             case 150:
                 phql_ret_literal_zval(
                     $yygotominor,
-                    Opcode::PHQL_T_INTEGER,
+                    Opcode::INTEGER->value,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
                 break;
@@ -4354,7 +4354,7 @@ class phql_Parser
             case 151:
                 phql_ret_literal_zval(
                     $yygotominor,
-                    Opcode::PHQL_T_HINTEGER,
+                    Opcode::HINTEGER->value,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
                 break;
@@ -4362,7 +4362,7 @@ class phql_Parser
             case 157:
                 phql_ret_placeholder_zval(
                     $yygotominor,
-                    Opcode::PHQL_T_NPLACEHOLDER,
+                    Opcode::NPLACEHOLDER->value,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
                 break;
@@ -4370,7 +4370,7 @@ class phql_Parser
             case 158:
                 phql_ret_placeholder_zval(
                     $yygotominor,
-                    Opcode::PHQL_T_SPLACEHOLDER,
+                    Opcode::SPLACEHOLDER->value,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
                 break;
@@ -4378,18 +4378,18 @@ class phql_Parser
             case 159:
                 phql_ret_placeholder_zval(
                     $yygotominor,
-                    Opcode::PHQL_T_BPLACEHOLDER,
+                    Opcode::BPLACEHOLDER->value,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
                 break;
             case 97:
-                phql_ret_expr($yygotominor, Opcode::PHQL_T_MINUS, null, $this->yystack[$this->yyidx + 0]->minor);
+                phql_ret_expr($yygotominor, Opcode::MINUS->value, null, $this->yystack[$this->yyidx + 0]->minor);
                 $this->yy_destructor(21, $this->yystack[$this->yyidx + -1]->minor);
                 break;
             case 98:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_SUB,
+                    Opcode::SUB->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4398,7 +4398,7 @@ class phql_Parser
             case 99:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_ADD,
+                    Opcode::ADD->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4407,7 +4407,7 @@ class phql_Parser
             case 100:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_MUL,
+                    Opcode::MUL->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4416,7 +4416,7 @@ class phql_Parser
             case 101:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_DIV,
+                    Opcode::DIV->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4425,7 +4425,7 @@ class phql_Parser
             case 102:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_MOD,
+                    Opcode::MOD->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4434,7 +4434,7 @@ class phql_Parser
             case 103:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_AND,
+                    Opcode::AND->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4443,7 +4443,7 @@ class phql_Parser
             case 104:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_OR,
+                    Opcode::OR->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4452,7 +4452,7 @@ class phql_Parser
             case 105:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_BITWISE_AND,
+                    Opcode::BITWISE_AND->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4461,7 +4461,7 @@ class phql_Parser
             case 106:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_BITWISE_OR,
+                    Opcode::BITWISE_OR->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4470,7 +4470,7 @@ class phql_Parser
             case 107:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_BITWISE_XOR,
+                    Opcode::BITWISE_XOR->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4479,7 +4479,7 @@ class phql_Parser
             case 108:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_EQUALS,
+                    Opcode::EQUALS->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4488,7 +4488,7 @@ class phql_Parser
             case 109:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_NOTEQUALS,
+                    Opcode::NOTEQUALS->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4497,7 +4497,7 @@ class phql_Parser
             case 110:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_LESS,
+                    Opcode::LESS->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4506,7 +4506,7 @@ class phql_Parser
             case 111:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_GREATER,
+                    Opcode::GREATER->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4515,7 +4515,7 @@ class phql_Parser
             case 112:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_GREATEREQUAL,
+                    Opcode::GREATEREQUAL->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4524,7 +4524,7 @@ class phql_Parser
             case 113:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_LESSEQUAL,
+                    Opcode::LESSEQUAL->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4533,7 +4533,7 @@ class phql_Parser
             case 114:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_LIKE,
+                    Opcode::LIKE->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4542,7 +4542,7 @@ class phql_Parser
             case 115:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_NLIKE,
+                    Opcode::NLIKE->value,
                     $this->yystack[$this->yyidx + -3]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4552,7 +4552,7 @@ class phql_Parser
             case 116:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_ILIKE,
+                    Opcode::ILIKE->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4561,7 +4561,7 @@ class phql_Parser
             case 117:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_NILIKE,
+                    Opcode::NILIKE->value,
                     $this->yystack[$this->yyidx + -3]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4572,7 +4572,7 @@ class phql_Parser
             case 121:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_IN,
+                    Opcode::IN->value,
                     $this->yystack[$this->yyidx + -4]->minor,
                     $this->yystack[$this->yyidx + -1]->minor
                 );
@@ -4584,7 +4584,7 @@ class phql_Parser
             case 122:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_NOTIN,
+                    Opcode::NOTIN->value,
                     $this->yystack[$this->yyidx + -5]->minor,
                     $this->yystack[$this->yyidx + -1]->minor
                 );
@@ -4596,7 +4596,7 @@ class phql_Parser
             case 120:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_SUBQUERY,
+                    Opcode::SUBQUERY->value,
                     $this->yystack[$this->yyidx + -1]->minor,
                     null
                 );
@@ -4604,7 +4604,7 @@ class phql_Parser
                 $this->yy_destructor(46, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 123:
-                phql_ret_expr($yygotominor, Opcode::PHQL_T_EXISTS, null, $this->yystack[$this->yyidx + -1]->minor);
+                phql_ret_expr($yygotominor, Opcode::EXISTS->value, null, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(66, $this->yystack[$this->yyidx + -3]->minor);
                 $this->yy_destructor(45, $this->yystack[$this->yyidx + -2]->minor);
                 $this->yy_destructor(46, $this->yystack[$this->yyidx + 0]->minor);
@@ -4612,7 +4612,7 @@ class phql_Parser
             case 124:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_AGAINST,
+                    Opcode::AGAINST->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4623,7 +4623,7 @@ class phql_Parser
                 phql_ret_raw_qualified_name($qualified, $this->yystack[$this->yyidx + -1]->minor);
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_CAST,
+                    Opcode::CAST->value,
                     $this->yystack[$this->yyidx + -3]->minor,
                     $qualified
                 );
@@ -4637,7 +4637,7 @@ class phql_Parser
                 phql_ret_raw_qualified_name($qualified, $this->yystack[$this->yyidx + -1]->minor, null);
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_CONVERT,
+                    Opcode::CONVERT->value,
                     $this->yystack[$this->yyidx + -3]->minor,
                     $qualified
                 );
@@ -4649,7 +4649,7 @@ class phql_Parser
             case 127:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_CASE,
+                    Opcode::CASE->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + -1]->minor
                 );
@@ -4659,7 +4659,7 @@ class phql_Parser
             case 130:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_WHEN,
+                    Opcode::WHEN->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4667,7 +4667,7 @@ class phql_Parser
                 $this->yy_destructor(73, $this->yystack[$this->yyidx + -1]->minor);
                 break;
             case 131:
-                phql_ret_expr($yygotominor, Opcode::PHQL_T_ELSE, $this->yystack[$this->yyidx + 0]->minor, null);
+                phql_ret_expr($yygotominor, Opcode::ELSE->value, $this->yystack[$this->yyidx + 0]->minor, null);
                 $this->yy_destructor(74, $this->yystack[$this->yyidx + -1]->minor);
                 break;
             case 133:
@@ -4686,14 +4686,14 @@ class phql_Parser
                 $this->yy_destructor(29, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 142:
-                phql_ret_expr($yygotominor, Opcode::PHQL_T_ISNULL, $this->yystack[$this->yyidx + -2]->minor, null);
+                phql_ret_expr($yygotominor, Opcode::ISNULL->value, $this->yystack[$this->yyidx + -2]->minor, null);
                 $this->yy_destructor(22, $this->yystack[$this->yyidx + -1]->minor);
                 $this->yy_destructor(75, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 143:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_ISNOTNULL,
+                    Opcode::ISNOTNULL->value,
                     $this->yystack[$this->yyidx + -3]->minor,
                     null
                 );
@@ -4704,7 +4704,7 @@ class phql_Parser
             case 144:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_BETWEEN,
+                    Opcode::BETWEEN->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4713,20 +4713,20 @@ class phql_Parser
             case 145:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_BETWEEN_NOT,
+                    Opcode::BETWEEN_NOT->value,
                     $this->yystack[$this->yyidx + -2]->minor,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
                 $this->yy_destructor(3, $this->yystack[$this->yyidx + -1]->minor);
                 break;
             case 146:
-                phql_ret_expr($yygotominor, Opcode::PHQL_T_NOT, null, $this->yystack[$this->yyidx + 0]->minor);
+                phql_ret_expr($yygotominor, Opcode::NOT->value, null, $this->yystack[$this->yyidx + 0]->minor);
                 $this->yy_destructor(24, $this->yystack[$this->yyidx + -1]->minor);
                 break;
             case 147:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_BITWISE_NOT,
+                    Opcode::BITWISE_NOT->value,
                     null,
                     $this->yystack[$this->yyidx + 0]->minor
                 );
@@ -4735,7 +4735,7 @@ class phql_Parser
             case 148:
                 phql_ret_expr(
                     $yygotominor,
-                    Opcode::PHQL_T_ENCLOSED,
+                    Opcode::ENCLOSED->value,
                     $this->yystack[$this->yyidx + -1]->minor,
                     null
                 );
@@ -4743,19 +4743,19 @@ class phql_Parser
                 $this->yy_destructor(46, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 152:
-                phql_ret_literal_zval($yygotominor, Opcode::PHQL_T_STRING, $this->yystack[$this->yyidx + 0]->minor);
+                phql_ret_literal_zval($yygotominor, Opcode::STRING->value, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 153:
-                phql_ret_literal_zval($yygotominor, Opcode::PHQL_T_DOUBLE, $this->yystack[$this->yyidx + 0]->minor);
+                phql_ret_literal_zval($yygotominor, Opcode::DOUBLE->value, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 154:
-                phql_ret_literal_zval($yygotominor, Opcode::PHQL_T_NULL);
+                phql_ret_literal_zval($yygotominor, Opcode::NULL->value);
                 $this->yy_destructor(75, $this->yystack[$this->yyidx + 0]->minor);
                 break;
             case 155:
 #line 920 "c/parser.php.lemon"
                 {
-                    phql_ret_literal_zval($yygotominor, Opcode::PHQL_T_TRUE, null);
+                    phql_ret_literal_zval($yygotominor, Opcode::TRUE->value, null);
                     $this->yy_destructor(78, $this->yystack[$this->yyidx + 0]->minor);
                 }
 #line 2086 "c/parser.php.php"
@@ -4763,7 +4763,7 @@ class phql_Parser
             case 156:
 #line 924 "c/parser.php.lemon"
                 {
-                    phql_ret_literal_zval($yygotominor, Opcode::PHQL_T_FALSE, null);
+                    phql_ret_literal_zval($yygotominor, Opcode::FALSE->value, null);
                     $this->yy_destructor(79, $this->yystack[$this->yyidx + 0]->minor);
                 }
 #line 2094 "c/parser.php.php"
@@ -4861,8 +4861,8 @@ class phql_Parser
 
         if ($this->status->getState()->getStartLength()) {
             if ($active_token) {
-                if (in_array($active_token->getOpcode(), $tokens)) {
-                    $token_name = array_search($active_token->getOpcode(), $tokens);
+                if (in_array($active_token->value, $tokens)) {
+                    $token_name = array_search($active_token->value, $tokens);
                 }
             }
 
@@ -4871,11 +4871,11 @@ class phql_Parser
             }
 
             if ($near_length > 0) {
-                if ($this->status->getToken()->getValue()) {
+                if ($this->status->getToken()->value) {
                     $this->status->setSyntaxError(sprintf(
                         "Syntax error, unexpected token %s(%s), near to '%s', when parsing: %s",
                         $token_name,
-                        $this->status->getToken()->getValue(),
+                        $this->status->getToken()->value,
                         $this->status->getState()->getStart(),
                         $this->status->getState()->getRawBuffer(),
                     ));
@@ -4888,12 +4888,12 @@ class phql_Parser
                     ));
                 }
             } else {
-                if ($active_token != Opcode::PHQL_T_IGNORE) {
-                    if ($this->status->getToken()->getValue()) {
+                if ($active_token !== Opcode::IGNORE) {
+                    if ($this->status->getToken()->value) {
                         $this->status->setSyntaxError(sprintf(
                             "Syntax error, unexpected token %s(%s), at the end of query, when parsing: %s",
                             $token_name,
-                            $this->status->getToken()->getValue(),
+                            $this->status->getToken()->value,
                             $this->status->getState()->getRawBuffer(),
                         ));
                     } else {
@@ -4937,20 +4937,21 @@ class phql_yyStackEntry
 function phql_ret_insert_statement(&$ret, $Q, $F, $V): void
 {
     $ret = [
-        "type" => Opcode::PHQL_T_INSERT,
+        "type"          => Opcode::INSERT->value,
         "qualifiedName" => $Q,
-        "values" => $V,
     ];
 
     if ($F !== null) {
         $ret["fields"] = $F;
     }
+
+    $ret["values"] = $V;
 }
 
 function phql_ret_select_statement(&$ret, $S, $W, $O, $G, $H, $L, $F): void
 {
     $ret = [
-        "type" => Opcode::PHQL_T_SELECT,
+        "type" => Opcode::SELECT->value,
         "select" => $S,
     ];
 
@@ -5008,7 +5009,7 @@ function phql_ret_literal_zval(&$ret, int $type, ?Token $T = null): array
 {
     $ret = ['type' => $type];
     if ($T !== null) {
-        $ret['value'] = $T->getValue();
+        $ret['value'] = $T->value;
     }
 
     return $ret;
@@ -5053,11 +5054,11 @@ function phql_ret_column_item(
     }
 
     if ($identifierColumn !== null) {
-        $ret['column'] = $identifierColumn->getValue();
+        $ret['column'] = $identifierColumn->value;
     }
 
     if ($alias !== null) {
-        $ret['alias'] = $alias->getValue();
+        $ret['alias'] = $alias->value;
     }
 
     return $ret;
@@ -5096,25 +5097,25 @@ function phql_ret_qualified_name(
 ): void
 {
     $ret = [
-        'type' => Opcode::PHQL_T_QUALIFIED,
+        'type' => Opcode::QUALIFIED->value,
     ];
 
     if ($nsAlias !== null) {
-        $ret['ns-alias'] = $nsAlias->getValue();
+        $ret['ns-alias'] = $nsAlias->value;
     }
 
     /* if (B) phql_add_assoc_stringl(..., "domain", ...) */
     if ($domain !== null) {
-        $ret['domain'] = $domain->getValue();
+        $ret['domain'] = $domain->value;
     }
 
-    $ret['name'] = $name->getValue();
+    $ret['name'] = $name->value;
 }
 
 function phql_ret_update_statement(array &$ret, $update, $where = null, $limit = null): void
 {
     $ret = [];
-    $ret['type'] = Opcode::PHQL_T_UPDATE;
+    $ret['type'] = Opcode::UPDATE->value;
     $ret['update'] = $update;
 
     if ($where !== null) {
@@ -5143,7 +5144,7 @@ function phql_ret_update_item(array &$ret, $column, $expr): void
 function phql_ret_delete_statement(array &$ret, $delete, $where = null, $limit = null): void
 {
     $ret = [];
-    $ret['type'] = Opcode::PHQL_T_DELETE;
+    $ret['type'] = Opcode::DELETE->value;
     $ret['delete'] = $delete;
 
     if ($where !== null) {
@@ -5169,7 +5170,7 @@ function phql_ret_assoc_name(array &$ret, $qualifiedName, $alias = null, $with =
     ];
 
     if ($alias !== null) {
-        $ret['alias'] = $alias instanceof Token ? $alias->getValue() : $alias;
+        $ret['alias'] = $alias instanceof Token ? $alias->value : $alias;
     }
 
     if ($with !== null) {
@@ -5201,29 +5202,29 @@ function phql_ret_placeholder_zval(array &$ret, int $type, ?Token $value = null)
 {
     $ret = [];
     $ret['type'] = $type;
-    $ret['value'] = $value->getValue() ?? null;
+    $ret['value'] = $value->value ?? null;
 }
 
 function phql_ret_raw_qualified_name(array &$ret, Token $tokenA, ?Token $tokenB = null): void
 {
     $ret = [];
-    $ret['type'] = Opcode::PHQL_T_RAW_QUALIFIED;
+    $ret['type'] = Opcode::RAW_QUALIFIED->value;
 
     if ($tokenB !== null) {
         /* Two-part qualified name: domain + name */
-        $ret['domain'] = $tokenA->getValue();
-        $ret['name']   = $tokenB->getValue();
+        $ret['domain'] = $tokenA->value;
+        $ret['name']   = $tokenB->value;
     } else {
         /* Single-part name */
-        $ret['name'] = $tokenA->getValue();
+        $ret['name'] = $tokenA->value;
     }
 }
 
 function phql_ret_func_call(array  &$ret, $name, $arguments = null, $distinct = null): void
 {
     $ret = [];
-    $ret['type'] = Opcode::PHQL_T_FCALL;
-    $ret['name'] = $name instanceof Token ? $name->getValue() : $name;
+    $ret['type'] = Opcode::FCALL->value;
+    $ret['name'] = $name instanceof Token ? $name->value : $name;
 
     if ($arguments !== null) {
         $ret['arguments'] = $arguments;
