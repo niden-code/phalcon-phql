@@ -27,7 +27,9 @@ final class GroupByTest extends AbstractUnitTestCase
      */
     public function testMvcModelQueryPhqlSelectGroupBy(): void
     {
-        $source   = "SELECT inv_status_flag, COUNT(*) " . "FROM Invoices " . "GROUP BY inv_status_flag";
+        $source   = "SELECT inv_status_flag, COUNT(*) "
+            . "FROM Invoices "
+            . "GROUP BY inv_status_flag";
         $expected = [
             'type' => Opcode::SELECT->value,
             'select'  => [
@@ -76,7 +78,8 @@ final class GroupByTest extends AbstractUnitTestCase
      */
     public function testMvcModelQueryPhqlSelectGroupByCountField(): void
     {
-        $source   = "SELECT inv_cst_id, inv_status_flag, COUNT(*) " . "FROM Invoices " .
+        $source   = "SELECT inv_cst_id, inv_status_flag, COUNT(*) "
+            . "FROM Invoices " .
                     "GROUP BY inv_cst_id, inv_status_flag";
         $expected = [
             'type' => Opcode::SELECT->value,
@@ -139,7 +142,9 @@ final class GroupByTest extends AbstractUnitTestCase
      */
     public function testMvcModelQueryPhqlSelectGroupBySumField(): void
     {
-        $source   = "SELECT inv_cst_id, SUM(inv_total) " . "FROM Invoices " . "GROUP BY inv_cst_id";
+        $source   = "SELECT inv_cst_id, SUM(inv_total) "
+            . "FROM Invoices "
+            . "GROUP BY inv_cst_id";
         $expected = [
             'type' => Opcode::SELECT->value,
             'select'  => [

@@ -25,42 +25,6 @@ final class NullTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
-    public function testMvcModelQueryPhqlSelectWhereIsNull(): void
-    {
-        $source   = "SELECT * FROM Invoices WHERE inv_title IS NULL";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'where'  => [
-                'type' => Opcode::ISNULL->value,
-                'left' => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_title',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
     public function testMvcModelQueryPhqlSelectWhereIsNotNull(): void
     {
         $source   = "SELECT * FROM Invoices WHERE inv_title IS NOT NULL";
@@ -81,6 +45,42 @@ final class NullTest extends AbstractUnitTestCase
             ],
             'where'  => [
                 'type' => Opcode::ISNOTNULL->value,
+                'left' => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_title',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectWhereIsNull(): void
+    {
+        $source   = "SELECT * FROM Invoices WHERE inv_title IS NULL";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'where'  => [
+                'type' => Opcode::ISNULL->value,
                 'left' => [
                     'type' => Opcode::QUALIFIED->value,
                     'name' => 'inv_title',

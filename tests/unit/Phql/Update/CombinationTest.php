@@ -23,80 +23,6 @@ final class CombinationTest extends AbstractUnitTestCase
      * @return void
      *
      * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-10
-     */
-    public function testMvcModelQueryPhqlUpdateWhereMultipleAndConditions(): void
-    {
-        $source   = "UPDATE Invoices SET inv_status_flag = 1 "
-            . "WHERE inv_cst_id = 1 AND inv_total > 100 AND inv_status_flag = 0";
-        $expected = [
-            'type' => Opcode::UPDATE->value,
-            'update' => [
-                'tables' => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-                'values' => [
-                    'column' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_status_flag',
-                    ],
-                    'expr'   => [
-                        'type' => Opcode::INTEGER->value,
-                        'value' => '1',
-                    ],
-                ],
-            ],
-            'where'  => [
-                'type' => Opcode::EQUALS->value,
-                'left'  => [
-                    'type' => Opcode::GREATER->value,
-                    'left'  => [
-                        'type' => Opcode::EQUALS->value,
-                        'left'  => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'inv_cst_id',
-                        ],
-                        'right' => [
-                            'type' => Opcode::AND->value,
-                            'left'  => [
-                                'type' => Opcode::INTEGER->value,
-                                'value' => '1',
-                            ],
-                            'right' => [
-                                'type' => Opcode::QUALIFIED->value,
-                                'name' => 'inv_total',
-                            ],
-                        ],
-                    ],
-                    'right' => [
-                        'type' => Opcode::AND->value,
-                        'left'  => [
-                            'type' => Opcode::INTEGER->value,
-                            'value' => '100',
-                        ],
-                        'right' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'inv_status_flag',
-                        ],
-                    ],
-                ],
-                'right' => [
-                    'type' => Opcode::INTEGER->value,
-                    'value' => '0',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
     public function testMvcModelQueryPhqlUpdate(): void
@@ -220,50 +146,6 @@ final class CombinationTest extends AbstractUnitTestCase
                 'right' => [
                     'type' => Opcode::INTEGER->value,
                     'value' => '0',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlUpdateTrueWhereNum(): void
-    {
-        $source   = "UPDATE Invoices " . "SET inv_status_flag = TRUE " . "WHERE inv_id = 1";
-        $expected = [
-            'type' => Opcode::UPDATE->value,
-            'update' => [
-                'tables' => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-                'values' => [
-                    'column' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_status_flag',
-                    ],
-                    'expr'   => [
-                        'type' => Opcode::TRUE->value,
-                    ],
-                ],
-            ],
-            'where'  => [
-                'type' => Opcode::EQUALS->value,
-                'left'  => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_id',
-                ],
-                'right' => [
-                    'type' => Opcode::INTEGER->value,
-                    'value' => '1',
                 ],
             ],
         ];
@@ -620,6 +502,50 @@ final class CombinationTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
+    public function testMvcModelQueryPhqlUpdateTrueWhereNum(): void
+    {
+        $source   = "UPDATE Invoices " . "SET inv_status_flag = TRUE " . "WHERE inv_id = 1";
+        $expected = [
+            'type' => Opcode::UPDATE->value,
+            'update' => [
+                'tables' => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+                'values' => [
+                    'column' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_status_flag',
+                    ],
+                    'expr'   => [
+                        'type' => Opcode::TRUE->value,
+                    ],
+                ],
+            ],
+            'where'  => [
+                'type' => Opcode::EQUALS->value,
+                'left'  => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_id',
+                ],
+                'right' => [
+                    'type' => Opcode::INTEGER->value,
+                    'value' => '1',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
     public function testMvcModelQueryPhqlUpdateUpperWhereNum(): void
     {
         $source   = "UPDATE Invoices " . "SET inv_title = UPPER(inv_title) " . "WHERE inv_status_flag = 1";
@@ -658,6 +584,80 @@ final class CombinationTest extends AbstractUnitTestCase
                 'right' => [
                     'type' => Opcode::INTEGER->value,
                     'value' => '1',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-10
+     */
+    public function testMvcModelQueryPhqlUpdateWhereMultipleAndConditions(): void
+    {
+        $source   = "UPDATE Invoices SET inv_status_flag = 1 "
+            . "WHERE inv_cst_id = 1 AND inv_total > 100 AND inv_status_flag = 0";
+        $expected = [
+            'type' => Opcode::UPDATE->value,
+            'update' => [
+                'tables' => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+                'values' => [
+                    'column' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_status_flag',
+                    ],
+                    'expr'   => [
+                        'type' => Opcode::INTEGER->value,
+                        'value' => '1',
+                    ],
+                ],
+            ],
+            'where'  => [
+                'type' => Opcode::EQUALS->value,
+                'left'  => [
+                    'type' => Opcode::GREATER->value,
+                    'left'  => [
+                        'type' => Opcode::EQUALS->value,
+                        'left'  => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'inv_cst_id',
+                        ],
+                        'right' => [
+                            'type' => Opcode::AND->value,
+                            'left'  => [
+                                'type' => Opcode::INTEGER->value,
+                                'value' => '1',
+                            ],
+                            'right' => [
+                                'type' => Opcode::QUALIFIED->value,
+                                'name' => 'inv_total',
+                            ],
+                        ],
+                    ],
+                    'right' => [
+                        'type' => Opcode::AND->value,
+                        'left'  => [
+                            'type' => Opcode::INTEGER->value,
+                            'value' => '100',
+                        ],
+                        'right' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'inv_status_flag',
+                        ],
+                    ],
+                ],
+                'right' => [
+                    'type' => Opcode::INTEGER->value,
+                    'value' => '0',
                 ],
             ],
         ];

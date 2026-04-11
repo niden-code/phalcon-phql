@@ -23,80 +23,6 @@ final class LimitTest extends AbstractUnitTestCase
      * @return void
      *
      * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-10
-     */
-    public function testMvcModelQueryPhqlSelectLimitBracePlaceholder(): void
-    {
-        $source   = "SELECT * FROM Invoices LIMIT {limit}";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'limit'  => [
-                'number' => [
-                    'type' => Opcode::BPLACEHOLDER->value,
-                    'value' => 'limit',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-10
-     */
-    public function testMvcModelQueryPhqlSelectLimitBracePlaceholderOffset(): void
-    {
-        $source   = "SELECT * FROM Invoices LIMIT {limit} OFFSET {offset}";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'limit'  => [
-                'number' => [
-                    'type' => Opcode::BPLACEHOLDER->value,
-                    'value' => 'limit',
-                ],
-                'offset' => [
-                    'type' => Opcode::BPLACEHOLDER->value,
-                    'value' => 'offset',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
     public function testMvcModelQueryPhqlSelectLimit(): void
@@ -198,6 +124,80 @@ final class LimitTest extends AbstractUnitTestCase
                 'offset' => [
                     'type' => Opcode::INTEGER->value,
                     'value' => '20',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-10
+     */
+    public function testMvcModelQueryPhqlSelectLimitBracePlaceholder(): void
+    {
+        $source   = "SELECT * FROM Invoices LIMIT {limit}";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'limit'  => [
+                'number' => [
+                    'type' => Opcode::BPLACEHOLDER->value,
+                    'value' => 'limit',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-10
+     */
+    public function testMvcModelQueryPhqlSelectLimitBracePlaceholderOffset(): void
+    {
+        $source   = "SELECT * FROM Invoices LIMIT {limit} OFFSET {offset}";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'limit'  => [
+                'number' => [
+                    'type' => Opcode::BPLACEHOLDER->value,
+                    'value' => 'limit',
+                ],
+                'offset' => [
+                    'type' => Opcode::BPLACEHOLDER->value,
+                    'value' => 'offset',
                 ],
             ],
         ];

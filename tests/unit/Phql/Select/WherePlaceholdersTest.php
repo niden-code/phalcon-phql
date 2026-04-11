@@ -25,6 +25,100 @@ final class WherePlaceholdersTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
+    public function testMvcModelQueryPhqlSelectWherePlaceholderBrackets(): void
+    {
+        $source   = "SELECT * FROM Invoices WHERE inv_id = {id}";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'where'  => [
+                'type' => Opcode::EQUALS->value,
+                'left'  => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_id',
+                ],
+                'right' => [
+                    'type' => Opcode::BPLACEHOLDER->value,
+                    'value' => 'id',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectWherePlaceholderBracketsAnd(): void
+    {
+        $source   = "SELECT * FROM Invoices WHERE inv_cst_id = {custId} AND inv_total > {minTotal}";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'where'  => [
+                'type' => Opcode::GREATER->value,
+                'left'  => [
+                    'type' => Opcode::EQUALS->value,
+                    'left'  => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_cst_id',
+                    ],
+                    'right' => [
+                        'type' => Opcode::AND->value,
+                        'left'  => [
+                            'type' => Opcode::BPLACEHOLDER->value,
+                            'value' => 'custId',
+                        ],
+                        'right' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'inv_total',
+                        ],
+                    ],
+                ],
+                'right' => [
+                    'type' => Opcode::BPLACEHOLDER->value,
+                    'value' => 'minTotal',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
     public function testMvcModelQueryPhqlSelectWherePlaceholderNum(): void
     {
         $source   = "SELECT * FROM Invoices WHERE inv_id = ?0";
@@ -207,97 +301,4 @@ final class WherePlaceholdersTest extends AbstractUnitTestCase
         $this->assertSame($expected, $actual);
     }
 
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectWherePlaceholderBrackets(): void
-    {
-        $source   = "SELECT * FROM Invoices WHERE inv_id = {id}";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'where'  => [
-                'type' => Opcode::EQUALS->value,
-                'left'  => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_id',
-                ],
-                'right' => [
-                    'type' => Opcode::BPLACEHOLDER->value,
-                    'value' => 'id',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectWherePlaceholderBracketsAnd(): void
-    {
-        $source   = "SELECT * FROM Invoices WHERE inv_cst_id = {custId} AND inv_total > {minTotal}";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'where'  => [
-                'type' => Opcode::GREATER->value,
-                'left'  => [
-                    'type' => Opcode::EQUALS->value,
-                    'left'  => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_cst_id',
-                    ],
-                    'right' => [
-                        'type' => Opcode::AND->value,
-                        'left'  => [
-                            'type' => Opcode::BPLACEHOLDER->value,
-                            'value' => 'custId',
-                        ],
-                        'right' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'inv_total',
-                        ],
-                    ],
-                ],
-                'right' => [
-                    'type' => Opcode::BPLACEHOLDER->value,
-                    'value' => 'minTotal',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
 }

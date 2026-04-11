@@ -22,6 +22,33 @@ final class StatusTest extends AbstractUnitTestCase
         $this->assertFalse($status->getEnableLiterals());
     }
 
+    public function testEnableLiterals(): void
+    {
+        $state  = new State('SELECT');
+        $status = new Status($state);
+
+        $status->setEnableLiterals(true);
+
+        $this->assertTrue($status->getEnableLiterals());
+    }
+
+    public function testGetState(): void
+    {
+        $state  = new State('SELECT');
+        $status = new Status($state);
+
+        $this->assertSame($state, $status->getState());
+    }
+
+    public function testNoGetRetMethod(): void
+    {
+        $state  = new State('SELECT');
+        $status = new Status($state);
+
+        $this->assertFalse(method_exists($status, 'getRet'));
+        $this->assertFalse(method_exists($status, 'setRet'));
+    }
+
     public function testSetAndGetAst(): void
     {
         $state  = new State('SELECT');
@@ -51,32 +78,5 @@ final class StatusTest extends AbstractUnitTestCase
         $status->setSyntaxError('Unexpected token');
 
         $this->assertSame('Unexpected token', $status->getSyntaxError());
-    }
-
-    public function testEnableLiterals(): void
-    {
-        $state  = new State('SELECT');
-        $status = new Status($state);
-
-        $status->setEnableLiterals(true);
-
-        $this->assertTrue($status->getEnableLiterals());
-    }
-
-    public function testGetState(): void
-    {
-        $state  = new State('SELECT');
-        $status = new Status($state);
-
-        $this->assertSame($state, $status->getState());
-    }
-
-    public function testNoGetRetMethod(): void
-    {
-        $state  = new State('SELECT');
-        $status = new Status($state);
-
-        $this->assertFalse(method_exists($status, 'getRet'));
-        $this->assertFalse(method_exists($status, 'setRet'));
     }
 }

@@ -11,59 +11,12 @@ use Phalcon\Phql\Tests\AbstractUnitTestCase;
 
 final class ParserTest extends AbstractUnitTestCase
 {
-    public function testParseEmptyStringThrows(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('PHQL statement cannot be NULL');
-
-        (new Parser())->parse('');
-    }
-
-    public function testSetEnableLiteralsReturnsSelf(): void
-    {
-        $parser = new Parser();
-        $result = $parser->setEnableLiterals(false);
-
-        $this->assertSame($parser, $result);
-    }
-
-    public function testSetEnableLiteralsChaining(): void
-    {
-        // Should not throw — fluent chaining works
-        $result = (new Parser())->setEnableLiterals(true)->parse('SELECT * FROM Invoices');
-        $this->assertIsArray($result);
-    }
-
-    public function testLiteralsDisabledBlocksInteger(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Literals are disabled in PHQL statements');
-
-        (new Parser())->setEnableLiterals(false)->parse('SELECT 1 FROM Invoices');
-    }
-
     public function testLiteralsDisabledBlocksDouble(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Literals are disabled in PHQL statements');
 
         (new Parser())->setEnableLiterals(false)->parse('SELECT 1.5 FROM Invoices');
-    }
-
-    public function testLiteralsDisabledBlocksString(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Literals are disabled in PHQL statements');
-
-        (new Parser())->setEnableLiterals(false)->parse("SELECT 'hello' FROM Invoices");
-    }
-
-    public function testLiteralsDisabledBlocksTrue(): void
-    {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Literals are disabled in PHQL statements');
-
-        (new Parser())->setEnableLiterals(false)->parse('SELECT TRUE FROM Invoices');
     }
 
     public function testLiteralsDisabledBlocksFalse(): void
@@ -82,14 +35,43 @@ final class ParserTest extends AbstractUnitTestCase
         (new Parser())->setEnableLiterals(false)->parse('SELECT 0xFF FROM Invoices');
     }
 
-    public function testThrowsPhqlException(): void
+    public function testLiteralsDisabledBlocksInteger(): void
     {
-        try {
-            (new Parser())->parse('');
-        } catch (\Throwable $e) {
-            $this->assertInstanceOf(Exception::class, $e);
-            $this->assertNotInstanceOf(\RuntimeException::class, $e);
-        }
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Literals are disabled in PHQL statements');
+
+        (new Parser())->setEnableLiterals(false)->parse('SELECT 1 FROM Invoices');
+    }
+
+    public function testLiteralsDisabledBlocksString(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Literals are disabled in PHQL statements');
+
+        (new Parser())->setEnableLiterals(false)->parse("SELECT 'hello' FROM Invoices");
+    }
+
+    public function testLiteralsDisabledBlocksTrue(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Literals are disabled in PHQL statements');
+
+        (new Parser())->setEnableLiterals(false)->parse('SELECT TRUE FROM Invoices');
+    }
+
+    public function testLiteralsEnabledByDefault(): void
+    {
+        // Integer literal should parse without error when literals are enabled (default)
+        $result = (new Parser())->parse('SELECT 1 FROM Invoices');
+        $this->assertIsArray($result);
+    }
+
+    public function testParseEmptyStringThrows(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('PHQL statement cannot be NULL');
+
+        (new Parser())->parse('');
     }
 
     public function testParseSimpleSelect(): void
@@ -101,10 +83,53 @@ final class ParserTest extends AbstractUnitTestCase
         $this->assertArrayHasKey('select', $result);
     }
 
-    public function testLiteralsEnabledByDefault(): void
+    public function testScannerErrorLongMessage(): void
     {
-        // Integer literal should parse without error when literals are enabled (default)
-        $result = (new Parser())->parse('SELECT 1 FROM Invoices');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageMatches('/Scanning error before/');
+        $this->expectExceptionMessageMatches('/\.\.\./');
+
+        (new Parser())->parse('#' . str_repeat('x', 20));
+    }
+
+    public function testScannerErrorShortMessage(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageMatches('/Scanning error before/');
+
+        (new Parser())->parse('#');
+    }
+
+    public function testSetEnableLiteralsChaining(): void
+    {
+        // Should not throw — fluent chaining works
+        $result = (new Parser())->setEnableLiterals(true)->parse('SELECT * FROM Invoices');
         $this->assertIsArray($result);
+    }
+
+    public function testSetEnableLiteralsReturnsSelf(): void
+    {
+        $parser = new Parser();
+        $result = $parser->setEnableLiterals(false);
+
+        $this->assertSame($parser, $result);
+    }
+
+    public function testThrowsPhqlException(): void
+    {
+        try {
+            (new Parser())->parse('');
+        } catch (\Throwable $e) {
+            $this->assertInstanceOf(Exception::class, $e);
+            $this->assertNotInstanceOf(\RuntimeException::class, $e);
+        }
+    }
+
+    public function testUnknownOpcodeThrows(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageMatches('/Unknown opcode/');
+
+        (new Parser())->parse('SELECT : FROM Invoices');
     }
 }

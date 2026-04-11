@@ -65,86 +65,6 @@ final class OperatorsTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
-    public function testMvcModelQueryPhqlSelectSubtraction(): void
-    {
-        $source   = "SELECT inv_total - 5 FROM Invoices";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::SUB->value,
-                            'left'  => [
-                                'type' => Opcode::QUALIFIED->value,
-                                'name' => 'inv_total',
-                            ],
-                            'right' => [
-                                'type' => Opcode::INTEGER->value,
-                                'value' => '5',
-                            ],
-                        ],
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectMultiplication(): void
-    {
-        $source   = "SELECT inv_total * 1.1 FROM Invoices";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::MUL->value,
-                            'left'  => [
-                                'type' => Opcode::QUALIFIED->value,
-                                'name' => 'inv_total',
-                            ],
-                            'right' => [
-                                'type' => Opcode::DOUBLE->value,
-                                'value' => '1.1',
-                            ],
-                        ],
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
     public function testMvcModelQueryPhqlSelectDivision(): void
     {
         $source   = "SELECT inv_total / 2 FROM Invoices";
@@ -203,6 +123,46 @@ final class OperatorsTest extends AbstractUnitTestCase
                             'right' => [
                                 'type' => Opcode::INTEGER->value,
                                 'value' => '3',
+                            ],
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectMultiplication(): void
+    {
+        $source   = "SELECT inv_total * 1.1 FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::MUL->value,
+                            'left'  => [
+                                'type' => Opcode::QUALIFIED->value,
+                                'name' => 'inv_total',
+                            ],
+                            'right' => [
+                                'type' => Opcode::DOUBLE->value,
+                                'value' => '1.1',
                             ],
                         ],
                     ],
@@ -311,6 +271,46 @@ final class OperatorsTest extends AbstractUnitTestCase
                             ],
                         ],
                         'alias'  => 'adjusted',
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectSubtraction(): void
+    {
+        $source   = "SELECT inv_total - 5 FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::SUB->value,
+                            'left'  => [
+                                'type' => Opcode::QUALIFIED->value,
+                                'name' => 'inv_total',
+                            ],
+                            'right' => [
+                                'type' => Opcode::INTEGER->value,
+                                'value' => '5',
+                            ],
+                        ],
                     ],
                 ],
                 'tables'  => [

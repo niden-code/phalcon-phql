@@ -23,6 +23,223 @@ final class SubqueriesTest extends AbstractUnitTestCase
      * @return void
      *
      * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectFieldSubquery(): void
+    {
+        $source   = "SELECT i.inv_id, "
+            . "(SELECT COUNT(*) "
+            . "FROM Invoices "
+            . "WHERE inv_cst_id = i.inv_cst_id) AS cst_count "
+            . "FROM Invoices i";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'domain' => 'i',
+                            'name'   => 'inv_id',
+                        ],
+                    ],
+                    1 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::SUBQUERY->value,
+                            'left' => [
+                                'type' => Opcode::SELECT->value,
+                                'select' => [
+                                    'columns' => [
+                                        0 => [
+                                            'type' => Opcode::EXPR->value,
+                                            'column' => [
+                                                'type' => Opcode::FCALL->value,
+                                                'name'      => 'COUNT',
+                                                'arguments' => [
+                                                    0 => [
+                                                        'type' => Opcode::STARALL->value,
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                    'tables'  => [
+                                        'qualifiedName' => [
+                                            'type' => Opcode::QUALIFIED->value,
+                                            'name' => 'Invoices',
+                                        ],
+                                    ],
+                                ],
+                                'where'  => [
+                                    'type' => Opcode::EQUALS->value,
+                                    'left'  => [
+                                        'type' => Opcode::QUALIFIED->value,
+                                        'name' => 'inv_cst_id',
+                                    ],
+                                    'right' => [
+                                        'type' => Opcode::QUALIFIED->value,
+                                        'domain' => 'i',
+                                        'name'   => 'inv_cst_id',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'alias'  => 'cst_count',
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                    'alias'         => 'i',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectWhereEqualsSubquery(): void
+    {
+        $source   = "SELECT * "
+            . "FROM Invoices "
+            . "WHERE inv_total = (SELECT MAX(inv_total) FROM Invoices)";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'where'  => [
+                'type' => Opcode::EQUALS->value,
+                'left'  => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_total',
+                ],
+                'right' => [
+                    'type' => Opcode::SUBQUERY->value,
+                    'left' => [
+                        'type' => Opcode::SELECT->value,
+                        'select' => [
+                            'columns' => [
+                                0 => [
+                                    'type' => Opcode::EXPR->value,
+                                    'column' => [
+                                        'type' => Opcode::FCALL->value,
+                                        'name'      => 'MAX',
+                                        'arguments' => [
+                                            0 => [
+                                                'type' => Opcode::QUALIFIED->value,
+                                                'name' => 'inv_total',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'tables'  => [
+                                'qualifiedName' => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'Invoices',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectWhereExistsSubquery(): void
+    {
+        $source   = "SELECT * "
+            . "FROM Invoices "
+            . "WHERE EXISTS "
+            . "(SELECT id FROM Customers WHERE id = Invoices.inv_cst_id)";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'where'  => [
+                'type' => Opcode::EXISTS->value,
+                'right' => [
+                    'type' => Opcode::SELECT->value,
+                    'select' => [
+                        'columns' => [
+                            0 => [
+                                'type' => Opcode::EXPR->value,
+                                'column' => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'id',
+                                ],
+                            ],
+                        ],
+                        'tables'  => [
+                            'qualifiedName' => [
+                                'type' => Opcode::QUALIFIED->value,
+                                'name' => 'Customers',
+                            ],
+                        ],
+                    ],
+                    'where'  => [
+                        'type' => Opcode::EQUALS->value,
+                        'left'  => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'id',
+                        ],
+                        'right' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'domain' => 'Invoices',
+                            'name'   => 'inv_cst_id',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-10
      */
     public function testMvcModelQueryPhqlSelectWhereInNestedSubquery(): void
@@ -256,220 +473,4 @@ final class SubqueriesTest extends AbstractUnitTestCase
         $this->assertSame($expected, $actual);
     }
 
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectWhereExistsSubquery(): void
-    {
-        $source   = "SELECT * "
-            . "FROM Invoices "
-            . "WHERE EXISTS "
-            . "(SELECT id FROM Customers WHERE id = Invoices.inv_cst_id)";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'where'  => [
-                'type' => Opcode::EXISTS->value,
-                'right' => [
-                    'type' => Opcode::SELECT->value,
-                    'select' => [
-                        'columns' => [
-                            0 => [
-                                'type' => Opcode::EXPR->value,
-                                'column' => [
-                                    'type' => Opcode::QUALIFIED->value,
-                                    'name' => 'id',
-                                ],
-                            ],
-                        ],
-                        'tables'  => [
-                            'qualifiedName' => [
-                                'type' => Opcode::QUALIFIED->value,
-                                'name' => 'Customers',
-                            ],
-                        ],
-                    ],
-                    'where'  => [
-                        'type' => Opcode::EQUALS->value,
-                        'left'  => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'id',
-                        ],
-                        'right' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'domain' => 'Invoices',
-                            'name'   => 'inv_cst_id',
-                        ],
-                    ],
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectWhereEqualsSubquery(): void
-    {
-        $source   = "SELECT * "
-            . "FROM Invoices "
-            . "WHERE inv_total = (SELECT MAX(inv_total) FROM Invoices)";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'where'  => [
-                'type' => Opcode::EQUALS->value,
-                'left'  => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_total',
-                ],
-                'right' => [
-                    'type' => Opcode::SUBQUERY->value,
-                    'left' => [
-                        'type' => Opcode::SELECT->value,
-                        'select' => [
-                            'columns' => [
-                                0 => [
-                                    'type' => Opcode::EXPR->value,
-                                    'column' => [
-                                        'type' => Opcode::FCALL->value,
-                                        'name'      => 'MAX',
-                                        'arguments' => [
-                                            0 => [
-                                                'type' => Opcode::QUALIFIED->value,
-                                                'name' => 'inv_total',
-                                            ],
-                                        ],
-                                    ],
-                                ],
-                            ],
-                            'tables'  => [
-                                'qualifiedName' => [
-                                    'type' => Opcode::QUALIFIED->value,
-                                    'name' => 'Invoices',
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectFieldSubquery(): void
-    {
-        $source   = "SELECT i.inv_id, "
-            . "(SELECT COUNT(*) "
-            . "FROM Invoices "
-            . "WHERE inv_cst_id = i.inv_cst_id) AS cst_count "
-            . "FROM Invoices i";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'domain' => 'i',
-                            'name'   => 'inv_id',
-                        ],
-                    ],
-                    1 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::SUBQUERY->value,
-                            'left' => [
-                                'type' => Opcode::SELECT->value,
-                                'select' => [
-                                    'columns' => [
-                                        0 => [
-                                            'type' => Opcode::EXPR->value,
-                                            'column' => [
-                                                'type' => Opcode::FCALL->value,
-                                                'name'      => 'COUNT',
-                                                'arguments' => [
-                                                    0 => [
-                                                        'type' => Opcode::STARALL->value,
-                                                    ],
-                                                ],
-                                            ],
-                                        ],
-                                    ],
-                                    'tables'  => [
-                                        'qualifiedName' => [
-                                            'type' => Opcode::QUALIFIED->value,
-                                            'name' => 'Invoices',
-                                        ],
-                                    ],
-                                ],
-                                'where'  => [
-                                    'type' => Opcode::EQUALS->value,
-                                    'left'  => [
-                                        'type' => Opcode::QUALIFIED->value,
-                                        'name' => 'inv_cst_id',
-                                    ],
-                                    'right' => [
-                                        'type' => Opcode::QUALIFIED->value,
-                                        'domain' => 'i',
-                                        'name'   => 'inv_cst_id',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'alias'  => 'cst_count',
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                    'alias'         => 'i',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
 }

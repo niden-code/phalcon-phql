@@ -10,6 +10,15 @@ use Phalcon\Phql\Tests\AbstractUnitTestCase;
 
 final class StateTest extends AbstractUnitTestCase
 {
+    public function testClearActiveToken(): void
+    {
+        $state = new State('SELECT');
+        $state->setActiveToken(Opcode::SELECT);
+        $state->setActiveToken(null);
+
+        $this->assertNull($state->getActiveToken());
+    }
+
     public function testConstruction(): void
     {
         $state = new State('SELECT');
@@ -29,23 +38,6 @@ final class StateTest extends AbstractUnitTestCase
         $this->assertNull($state->getStart());
     }
 
-    public function testSetActiveToken(): void
-    {
-        $state = new State('SELECT');
-        $state->setActiveToken(Opcode::SELECT);
-
-        $this->assertSame(Opcode::SELECT, $state->getActiveToken());
-    }
-
-    public function testClearActiveToken(): void
-    {
-        $state = new State('SELECT');
-        $state->setActiveToken(Opcode::SELECT);
-        $state->setActiveToken(null);
-
-        $this->assertNull($state->getActiveToken());
-    }
-
     public function testIncrementStart(): void
     {
         $state = new State('SELECT');
@@ -55,6 +47,21 @@ final class StateTest extends AbstractUnitTestCase
         $this->assertSame('E', $state->getStart());
     }
 
+    public function testNoSetEndMethod(): void
+    {
+        $state = new State('SELECT');
+        /** @phpstan-ignore function.impossibleType */
+        $this->assertFalse(method_exists($state, 'setEnd'));
+    }
+
+    public function testSetActiveToken(): void
+    {
+        $state = new State('SELECT');
+        $state->setActiveToken(Opcode::SELECT);
+
+        $this->assertSame(Opcode::SELECT, $state->getActiveToken());
+    }
+
     public function testSetCursor(): void
     {
         $state = new State('SELECT');
@@ -62,12 +69,5 @@ final class StateTest extends AbstractUnitTestCase
 
         $this->assertSame(3, $state->getCursor());
         $this->assertSame('E', $state->getStart());
-    }
-
-    public function testNoSetEndMethod(): void
-    {
-        $state = new State('SELECT');
-        /** @phpstan-ignore function.impossibleType */
-        $this->assertFalse(method_exists($state, 'setEnd'));
     }
 }

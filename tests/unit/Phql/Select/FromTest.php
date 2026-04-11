@@ -23,6 +23,73 @@ final class FromTest extends AbstractUnitTestCase
      * @return void
      *
      * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectFromAliases(): void
+    {
+        $source   = "SELECT i.inv_id, c.name "
+            . "FROM Invoices AS i, Customers AS c "
+            . "WHERE i.inv_cst_id = c.id";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'domain' => 'i',
+                            'name'   => 'inv_id',
+                        ],
+                    ],
+                    1 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'domain' => 'c',
+                            'name'   => 'name',
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    0 => [
+                        'qualifiedName' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'Invoices',
+                        ],
+                        'alias'         => 'i',
+                    ],
+                    1 => [
+                        'qualifiedName' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'Customers',
+                        ],
+                        'alias'         => 'c',
+                    ],
+                ],
+            ],
+            'where'  => [
+                'type' => Opcode::EQUALS->value,
+                'left'  => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'domain' => 'i',
+                    'name'   => 'inv_cst_id',
+                ],
+                'right' => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'domain' => 'c',
+                    'name'   => 'id',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-10
      */
     public function testMvcModelQueryPhqlSelectFromMultipleTables(): void
@@ -107,68 +174,4 @@ final class FromTest extends AbstractUnitTestCase
         $this->assertSame($expected, $actual);
     }
 
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectFromAliases(): void
-    {
-        $source   = "SELECT i.inv_id, c.name " . "FROM Invoices AS i, Customers AS c " . "WHERE i.inv_cst_id = c.id";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'domain' => 'i',
-                            'name'   => 'inv_id',
-                        ],
-                    ],
-                    1 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'domain' => 'c',
-                            'name'   => 'name',
-                        ],
-                    ],
-                ],
-                'tables'  => [
-                    0 => [
-                        'qualifiedName' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'Invoices',
-                        ],
-                        'alias'         => 'i',
-                    ],
-                    1 => [
-                        'qualifiedName' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'Customers',
-                        ],
-                        'alias'         => 'c',
-                    ],
-                ],
-            ],
-            'where'  => [
-                'type' => Opcode::EQUALS->value,
-                'left'  => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'domain' => 'i',
-                    'name'   => 'inv_cst_id',
-                ],
-                'right' => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'domain' => 'c',
-                    'name'   => 'id',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
 }

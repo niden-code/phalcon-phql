@@ -27,7 +27,8 @@ final class ForUpdateTest extends AbstractUnitTestCase
      */
     public function testMvcModelQueryPhqlSelectForUpdate(): void
     {
-        $source   = "SELECT * " . "FROM Invoices FOR UPDATE";
+        $source   = "SELECT * "
+            . "FROM Invoices FOR UPDATE";
         $expected = [
             'type' => Opcode::SELECT->value,
             'select'    => [
@@ -58,7 +59,9 @@ final class ForUpdateTest extends AbstractUnitTestCase
      */
     public function testMvcModelQueryPhqlSelectForUpdateWhere(): void
     {
-        $source   = "SELECT * " . "FROM Invoices " . "WHERE inv_id = 1 FOR UPDATE";
+        $source   = "SELECT * "
+            . "FROM Invoices "
+            . "WHERE inv_id = 1 FOR UPDATE";
         $expected = [
             'type' => Opcode::SELECT->value,
             'select'    => [

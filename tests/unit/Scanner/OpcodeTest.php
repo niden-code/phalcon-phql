@@ -9,6 +9,12 @@ use Phalcon\Phql\Tests\AbstractUnitTestCase;
 
 final class OpcodeTest extends AbstractUnitTestCase
 {
+    public function testFromInt(): void
+    {
+        $this->assertSame(Opcode::SELECT, Opcode::from(309));
+        $this->assertSame(Opcode::IDENTIFIER, Opcode::from(265));
+    }
+
     public function testKeyOpcodeValues(): void
     {
         $this->assertSame(43, Opcode::ADD->value);
@@ -33,21 +39,13 @@ final class OpcodeTest extends AbstractUnitTestCase
         $this->assertSame(355, Opcode::QUALIFIED->value);
     }
 
-    public function testSingleCharOpcodeValues(): void
+    public function testLabelFallbackToName(): void
     {
-        $this->assertSame(43, Opcode::ADD->value);      // ord('+')
-        $this->assertSame(45, Opcode::SUB->value);      // ord('-')
-        $this->assertSame(42, Opcode::MUL->value);      // ord('*')
-        $this->assertSame(47, Opcode::DIV->value);      // ord('/')
-        $this->assertSame(37, Opcode::MOD->value);      // ord('%')
-        $this->assertSame(61, Opcode::EQUALS->value);   // ord('=')
-        $this->assertSame(60, Opcode::LESS->value);     // ord('<')
-        $this->assertSame(62, Opcode::GREATER->value);  // ord('>')
-        $this->assertSame(33, Opcode::NOT->value);      // ord('!')
-        $this->assertSame(46, Opcode::DOT->value);      // ord('.')
-        $this->assertSame(58, Opcode::COLON->value);    // ord(':')
-        $this->assertSame(40, Opcode::PARENTHESES_OPEN->value);   // ord('(')
-        $this->assertSame(41, Opcode::PARENTHESES_CLOSE->value);  // ord(')')
+        $this->assertSame('SELECT', Opcode::SELECT->label());
+        $this->assertSame('FROM', Opcode::FROM->label());
+        $this->assertSame('WHERE', Opcode::WHERE->label());
+        $this->assertSame('IDENTIFIER', Opcode::IDENTIFIER->label());
+        $this->assertSame('INTEGER', Opcode::INTEGER->label());
     }
 
     public function testLabelOperators(): void
@@ -74,19 +72,21 @@ final class OpcodeTest extends AbstractUnitTestCase
         $this->assertSame(')', Opcode::PARENTHESES_CLOSE->label());
     }
 
-    public function testLabelFallbackToName(): void
+    public function testSingleCharOpcodeValues(): void
     {
-        $this->assertSame('SELECT', Opcode::SELECT->label());
-        $this->assertSame('FROM', Opcode::FROM->label());
-        $this->assertSame('WHERE', Opcode::WHERE->label());
-        $this->assertSame('IDENTIFIER', Opcode::IDENTIFIER->label());
-        $this->assertSame('INTEGER', Opcode::INTEGER->label());
-    }
-
-    public function testFromInt(): void
-    {
-        $this->assertSame(Opcode::SELECT, Opcode::from(309));
-        $this->assertSame(Opcode::IDENTIFIER, Opcode::from(265));
+        $this->assertSame(43, Opcode::ADD->value);      // ord('+')
+        $this->assertSame(45, Opcode::SUB->value);      // ord('-')
+        $this->assertSame(42, Opcode::MUL->value);      // ord('*')
+        $this->assertSame(47, Opcode::DIV->value);      // ord('/')
+        $this->assertSame(37, Opcode::MOD->value);      // ord('%')
+        $this->assertSame(61, Opcode::EQUALS->value);   // ord('=')
+        $this->assertSame(60, Opcode::LESS->value);     // ord('<')
+        $this->assertSame(62, Opcode::GREATER->value);  // ord('>')
+        $this->assertSame(33, Opcode::NOT->value);      // ord('!')
+        $this->assertSame(46, Opcode::DOT->value);      // ord('.')
+        $this->assertSame(58, Opcode::COLON->value);    // ord(':')
+        $this->assertSame(40, Opcode::PARENTHESES_OPEN->value);   // ord('(')
+        $this->assertSame(41, Opcode::PARENTHESES_CLOSE->value);  // ord(')')
     }
 
     public function testTryFromUnknown(): void

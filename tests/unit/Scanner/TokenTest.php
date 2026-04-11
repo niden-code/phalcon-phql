@@ -10,15 +10,6 @@ use Phalcon\Phql\Tests\AbstractUnitTestCase;
 
 final class TokenTest extends AbstractUnitTestCase
 {
-    public function testDefaultConstruction(): void
-    {
-        $token = new Token();
-
-        $this->assertNull($token->opcode);
-        $this->assertNull($token->value);
-        $this->assertSame(0, $token->length);
-    }
-
     public function testConstructionWithAllValues(): void
     {
         $token = new Token(Opcode::SELECT, null, 6);
@@ -35,6 +26,15 @@ final class TokenTest extends AbstractUnitTestCase
         $this->assertSame(Opcode::IDENTIFIER, $token->opcode);
         $this->assertSame('Invoices', $token->value);
         $this->assertSame(8, $token->length);
+    }
+
+    public function testDefaultConstruction(): void
+    {
+        $token = new Token();
+
+        $this->assertNull($token->opcode);
+        $this->assertNull($token->value);
+        $this->assertSame(0, $token->length);
     }
 
     public function testIsReadonly(): void

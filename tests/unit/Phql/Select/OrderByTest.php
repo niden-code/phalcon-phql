@@ -87,6 +87,104 @@ final class OrderByTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
+    public function testMvcModelQueryPhqlSelectOrderByDateDescIntAsc(): void
+    {
+        $source   = "SELECT * FROM Invoices ORDER BY inv_created_at DESC, inv_id ASC";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select'  => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'orderBy' => [
+                0 => [
+                    'column' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_created_at',
+                    ],
+                    'sort'   => 328,
+                ],
+                1 => [
+                    'column' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_id',
+                    ],
+                    'sort'   => 327,
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectOrderByFloatDescStringAscIntAsc(): void
+    {
+        $source   = "SELECT * FROM Invoices "
+            . "ORDER BY inv_total DESC, inv_title ASC, inv_id ASC";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select'  => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'orderBy' => [
+                0 => [
+                    'column' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_total',
+                    ],
+                    'sort'   => 328,
+                ],
+                1 => [
+                    'column' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_title',
+                    ],
+                    'sort'   => 327,
+                ],
+                2 => [
+                    'column' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_id',
+                    ],
+                    'sort'   => 327,
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
     public function testMvcModelQueryPhqlSelectOrderByInt(): void
     {
         $source   = "SELECT * FROM Invoices ORDER BY inv_id";
@@ -188,101 +286,4 @@ final class OrderByTest extends AbstractUnitTestCase
         $this->assertSame($expected, $actual);
     }
 
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectOrderByDateDescIntAsc(): void
-    {
-        $source   = "SELECT * FROM Invoices ORDER BY inv_created_at DESC, inv_id ASC";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select'  => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'orderBy' => [
-                0 => [
-                    'column' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_created_at',
-                    ],
-                    'sort'   => 328,
-                ],
-                1 => [
-                    'column' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_id',
-                    ],
-                    'sort'   => 327,
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectOrderByFloatDescStringAscIntAsc(): void
-    {
-        $source   = "SELECT * FROM Invoices "
-            . "ORDER BY inv_total DESC, inv_title ASC, inv_id ASC";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select'  => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'orderBy' => [
-                0 => [
-                    'column' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_total',
-                    ],
-                    'sort'   => 328,
-                ],
-                1 => [
-                    'column' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_title',
-                    ],
-                    'sort'   => 327,
-                ],
-                2 => [
-                    'column' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_id',
-                    ],
-                    'sort'   => 327,
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
 }

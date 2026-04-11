@@ -25,6 +25,111 @@ final class ComplexTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
+    public function testMvcModelQueryPhqlSelectAllWhereAndInAndBetweenOrderByLimitOffset(): void
+    {
+        $source   = "SELECT * "
+            . "FROM Invoices "
+            . "WHERE inv_cst_id = :cstId: "
+            . "AND inv_status_flag IN (0, 1) "
+            . "AND inv_total BETWEEN :min: AND :max: "
+            . "ORDER BY inv_created_at DESC "
+            . "LIMIT :limit: "
+            . "OFFSET :offset:";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select'  => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::STARALL->value,
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+            'where'   => [
+                'type' => Opcode::BETWEEN->value,
+                'left'  => [
+                    'type' => Opcode::EQUALS->value,
+                    'left'  => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'inv_cst_id',
+                    ],
+                    'right' => [
+                        'type' => Opcode::AND->value,
+                        'left'  => [
+                            'type' => Opcode::AND->value,
+                            'left'  => [
+                                'type' => Opcode::SPLACEHOLDER->value,
+                                'value' => 'cstId',
+                            ],
+                            'right' => [
+                                'type' => Opcode::IN->value,
+                                'left'  => [
+                                    'type' => Opcode::QUALIFIED->value,
+                                    'name' => 'inv_status_flag',
+                                ],
+                                'right' => [
+                                    0 => [
+                                        'type' => Opcode::INTEGER->value,
+                                        'value' => '0',
+                                    ],
+                                    1 => [
+                                        'type' => Opcode::INTEGER->value,
+                                        'value' => '1',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'right' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'inv_total',
+                        ],
+                    ],
+                ],
+                'right' => [
+                    'type' => Opcode::AND->value,
+                    'left'  => [
+                        'type' => Opcode::SPLACEHOLDER->value,
+                        'value' => 'min',
+                    ],
+                    'right' => [
+                        'type' => Opcode::SPLACEHOLDER->value,
+                        'value' => 'max',
+                    ],
+                ],
+            ],
+            'orderBy' => [
+                'column' => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_created_at',
+                ],
+                'sort'   => 328,
+            ],
+            'limit'   => [
+                'number' => [
+                    'type' => Opcode::SPLACEHOLDER->value,
+                    'value' => 'limit',
+                ],
+                'offset' => [
+                    'type' => Opcode::SPLACEHOLDER->value,
+                    'value' => 'offset',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
     public function testMvcModelQueryPhqlSelectSumFieldWhereGroupByHavingOrderByLimit(): void
     {
         $source   = "SELECT i.inv_id, i.inv_title, SUM(i.inv_total) AS total "
@@ -199,108 +304,4 @@ final class ComplexTest extends AbstractUnitTestCase
         $this->assertSame($expected, $actual);
     }
 
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectAllWhereAndInAndBetweenOrderByLimitOffset(): void
-    {
-        $source   = "SELECT * "
-            . "FROM Invoices "
-            . "WHERE inv_cst_id = :cstId: "
-            . "AND inv_status_flag IN (0, 1) "
-            . "AND inv_total BETWEEN :min: AND :max: "
-            . "ORDER BY inv_created_at DESC "
-            . "LIMIT :limit: "
-            . "OFFSET :offset:";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select'  => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::STARALL->value,
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-            'where'   => [
-                'type' => Opcode::BETWEEN->value,
-                'left'  => [
-                    'type' => Opcode::EQUALS->value,
-                    'left'  => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'inv_cst_id',
-                    ],
-                    'right' => [
-                        'type' => Opcode::AND->value,
-                        'left'  => [
-                            'type' => Opcode::AND->value,
-                            'left'  => [
-                                'type' => Opcode::SPLACEHOLDER->value,
-                                'value' => 'cstId',
-                            ],
-                            'right' => [
-                                'type' => Opcode::IN->value,
-                                'left'  => [
-                                    'type' => Opcode::QUALIFIED->value,
-                                    'name' => 'inv_status_flag',
-                                ],
-                                'right' => [
-                                    0 => [
-                                        'type' => Opcode::INTEGER->value,
-                                        'value' => '0',
-                                    ],
-                                    1 => [
-                                        'type' => Opcode::INTEGER->value,
-                                        'value' => '1',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'right' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'inv_total',
-                        ],
-                    ],
-                ],
-                'right' => [
-                    'type' => Opcode::AND->value,
-                    'left'  => [
-                        'type' => Opcode::SPLACEHOLDER->value,
-                        'value' => 'min',
-                    ],
-                    'right' => [
-                        'type' => Opcode::SPLACEHOLDER->value,
-                        'value' => 'max',
-                    ],
-                ],
-            ],
-            'orderBy' => [
-                'column' => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_created_at',
-                ],
-                'sort'   => 328,
-            ],
-            'limit'   => [
-                'number' => [
-                    'type' => Opcode::SPLACEHOLDER->value,
-                    'value' => 'limit',
-                ],
-                'offset' => [
-                    'type' => Opcode::SPLACEHOLDER->value,
-                    'value' => 'offset',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
 }

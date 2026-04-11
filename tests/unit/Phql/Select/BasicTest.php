@@ -115,79 +115,6 @@ final class BasicTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
-    public function testMvcModelQueryPhqlSelectInt(): void
-    {
-        $source   = "SELECT inv_id FROM Invoices";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'inv_id',
-                        ],
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlSelectIntString(): void
-    {
-        $source   = "SELECT inv_id, inv_title FROM Invoices";
-        $expected = [
-            'type' => Opcode::SELECT->value,
-            'select' => [
-                'columns' => [
-                    0 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'inv_id',
-                        ],
-                    ],
-                    1 => [
-                        'type' => Opcode::EXPR->value,
-                        'column' => [
-                            'type' => Opcode::QUALIFIED->value,
-                            'name' => 'inv_title',
-                        ],
-                    ],
-                ],
-                'tables'  => [
-                    'qualifiedName' => [
-                        'type' => Opcode::QUALIFIED->value,
-                        'name' => 'Invoices',
-                    ],
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
     public function testMvcModelQueryPhqlSelectIdStringFloat(): void
     {
         $source   = "SELECT inv_id, inv_title, inv_total FROM Invoices";
@@ -214,6 +141,39 @@ final class BasicTest extends AbstractUnitTestCase
                         'column' => [
                             'type' => Opcode::QUALIFIED->value,
                             'name' => 'inv_total',
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectInt(): void
+    {
+        $source   = "SELECT inv_id FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'inv_id',
                         ],
                     ],
                 ],
@@ -318,6 +278,46 @@ final class BasicTest extends AbstractUnitTestCase
                             'type' => Opcode::QUALIFIED->value,
                             'domain' => 'Invoices',
                             'name'   => 'inv_id',
+                        ],
+                    ],
+                ],
+                'tables'  => [
+                    'qualifiedName' => [
+                        'type' => Opcode::QUALIFIED->value,
+                        'name' => 'Invoices',
+                    ],
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlSelectIntString(): void
+    {
+        $source   = "SELECT inv_id, inv_title FROM Invoices";
+        $expected = [
+            'type' => Opcode::SELECT->value,
+            'select' => [
+                'columns' => [
+                    0 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'inv_id',
+                        ],
+                    ],
+                    1 => [
+                        'type' => Opcode::EXPR->value,
+                        'column' => [
+                            'type' => Opcode::QUALIFIED->value,
+                            'name' => 'inv_title',
                         ],
                     ],
                 ],

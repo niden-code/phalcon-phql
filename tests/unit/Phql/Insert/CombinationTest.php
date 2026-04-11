@@ -25,52 +25,6 @@ final class CombinationTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
-    public function testMvcModelQueryPhqlInsert(): void
-    {
-        $source   = "INSERT INTO Invoices " . "VALUES (1, 1, 1, 'Test Invoice', 100.00, '2025-01-01 00:00:00')";
-        $expected = [
-            'type' => Opcode::INSERT->value,
-            'qualifiedName' => [
-                'type' => Opcode::QUALIFIED->value,
-                'name' => 'Invoices',
-            ],
-            'values'        => [
-                0 => [
-                    'type' => Opcode::INTEGER->value,
-                    'value' => '1',
-                ],
-                1 => [
-                    'type' => Opcode::INTEGER->value,
-                    'value' => '1',
-                ],
-                2 => [
-                    'type' => Opcode::INTEGER->value,
-                    'value' => '1',
-                ],
-                3 => [
-                    'type' => Opcode::STRING->value,
-                    'value' => 'Test Invoice',
-                ],
-                4 => [
-                    'type' => Opcode::DOUBLE->value,
-                    'value' => '100.00',
-                ],
-                5 => [
-                    'type' => Opcode::STRING->value,
-                    'value' => '2025-01-01 00:00:00',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
     public function testMvcModelQueryPhqInsertFields(): void
     {
         $source   = "INSERT INTO Invoices " . "(inv_cst_id, inv_status_flag, inv_title, inv_total, inv_created_at) " .
@@ -123,6 +77,91 @@ final class CombinationTest extends AbstractUnitTestCase
                 4 => [
                     'type' => Opcode::STRING->value,
                     'value' => '2025-01-01 00:00:00',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlInsert(): void
+    {
+        $source   = "INSERT INTO Invoices " . "VALUES (1, 1, 1, 'Test Invoice', 100.00, '2025-01-01 00:00:00')";
+        $expected = [
+            'type' => Opcode::INSERT->value,
+            'qualifiedName' => [
+                'type' => Opcode::QUALIFIED->value,
+                'name' => 'Invoices',
+            ],
+            'values'        => [
+                0 => [
+                    'type' => Opcode::INTEGER->value,
+                    'value' => '1',
+                ],
+                1 => [
+                    'type' => Opcode::INTEGER->value,
+                    'value' => '1',
+                ],
+                2 => [
+                    'type' => Opcode::INTEGER->value,
+                    'value' => '1',
+                ],
+                3 => [
+                    'type' => Opcode::STRING->value,
+                    'value' => 'Test Invoice',
+                ],
+                4 => [
+                    'type' => Opcode::DOUBLE->value,
+                    'value' => '100.00',
+                ],
+                5 => [
+                    'type' => Opcode::STRING->value,
+                    'value' => '2025-01-01 00:00:00',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-10
+     */
+    public function testMvcModelQueryPhqlInsertArithmeticInValues(): void
+    {
+        $source   = "INSERT INTO Invoices (inv_total) VALUES (100 + 50)";
+        $expected = [
+            'type' => Opcode::INSERT->value,
+            'qualifiedName' => [
+                'type' => Opcode::QUALIFIED->value,
+                'name' => 'Invoices',
+            ],
+            'fields'        => [
+                0 => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_total',
+                ],
+            ],
+            'values'        => [
+                0 => [
+                    'type' => Opcode::ADD->value,
+                    'left'  => [
+                        'type' => Opcode::INTEGER->value,
+                        'value' => '100',
+                    ],
+                    'right' => [
+                        'type' => Opcode::INTEGER->value,
+                        'value' => '50',
+                    ],
                 ],
             ],
         ];
@@ -272,54 +311,6 @@ final class CombinationTest extends AbstractUnitTestCase
      * @author Phalcon Team <team@phalcon.io>
      * @since  2026-04-09
      */
-    public function testMvcModelQueryPhqlInsertFieldsPlaceholdersNum(): void
-    {
-        $source   = "INSERT INTO Invoices " . "(inv_cst_id, inv_title, inv_total) " . "VALUES (?0, ?1, ?2)";
-        $expected = [
-            'type' => Opcode::INSERT->value,
-            'qualifiedName' => [
-                'type' => Opcode::QUALIFIED->value,
-                'name' => 'Invoices',
-            ],
-            'fields'        => [
-                0 => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_cst_id',
-                ],
-                1 => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_title',
-                ],
-                2 => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_total',
-                ],
-            ],
-            'values'        => [
-                0 => [
-                    'type' => Opcode::NPLACEHOLDER->value,
-                    'value' => '?0',
-                ],
-                1 => [
-                    'type' => Opcode::NPLACEHOLDER->value,
-                    'value' => '?1',
-                ],
-                2 => [
-                    'type' => Opcode::NPLACEHOLDER->value,
-                    'value' => '?2',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
     public function testMvcModelQueryPhqlInsertFieldsPlaceholdersBrackets(): void
     {
         $source   = "INSERT INTO Invoices " . "(inv_id, inv_cst_id, inv_status_flag, inv_title, inv_total) " .
@@ -383,11 +374,11 @@ final class CombinationTest extends AbstractUnitTestCase
      * @return void
      *
      * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-10
+     * @since  2026-04-09
      */
-    public function testMvcModelQueryPhqlInsertArithmeticInValues(): void
+    public function testMvcModelQueryPhqlInsertFieldsPlaceholdersNum(): void
     {
-        $source   = "INSERT INTO Invoices (inv_total) VALUES (100 + 50)";
+        $source   = "INSERT INTO Invoices " . "(inv_cst_id, inv_title, inv_total) " . "VALUES (?0, ?1, ?2)";
         $expected = [
             'type' => Opcode::INSERT->value,
             'qualifiedName' => [
@@ -397,20 +388,68 @@ final class CombinationTest extends AbstractUnitTestCase
             'fields'        => [
                 0 => [
                     'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_cst_id',
+                ],
+                1 => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_title',
+                ],
+                2 => [
+                    'type' => Opcode::QUALIFIED->value,
                     'name' => 'inv_total',
                 ],
             ],
             'values'        => [
                 0 => [
-                    'type' => Opcode::ADD->value,
-                    'left'  => [
-                        'type' => Opcode::INTEGER->value,
-                        'value' => '100',
-                    ],
-                    'right' => [
-                        'type' => Opcode::INTEGER->value,
-                        'value' => '50',
-                    ],
+                    'type' => Opcode::NPLACEHOLDER->value,
+                    'value' => '?0',
+                ],
+                1 => [
+                    'type' => Opcode::NPLACEHOLDER->value,
+                    'value' => '?1',
+                ],
+                2 => [
+                    'type' => Opcode::NPLACEHOLDER->value,
+                    'value' => '?2',
+                ],
+            ],
+        ];
+        $actual   = (new Parser())->parse($source);
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return void
+     *
+     * @author Phalcon Team <team@phalcon.io>
+     * @since  2026-04-09
+     */
+    public function testMvcModelQueryPhqlInsertFieldsTrue(): void
+    {
+        $source   = "INSERT INTO Invoices (inv_title, inv_status_flag) VALUES ('New Invoice', TRUE)";
+        $expected = [
+            'type' => Opcode::INSERT->value,
+            'qualifiedName' => [
+                'type' => Opcode::QUALIFIED->value,
+                'name' => 'Invoices',
+            ],
+            'fields'        => [
+                0 => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_title',
+                ],
+                1 => [
+                    'type' => Opcode::QUALIFIED->value,
+                    'name' => 'inv_status_flag',
+                ],
+            ],
+            'values'        => [
+                0 => [
+                    'type' => Opcode::STRING->value,
+                    'value' => 'New Invoice',
+                ],
+                1 => [
+                    'type' => Opcode::TRUE->value,
                 ],
             ],
         ];
@@ -458,45 +497,6 @@ final class CombinationTest extends AbstractUnitTestCase
                 1 => [
                     'type' => Opcode::DOUBLE->value,
                     'value' => '100.00',
-                ],
-            ],
-        ];
-        $actual   = (new Parser())->parse($source);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @return void
-     *
-     * @author Phalcon Team <team@phalcon.io>
-     * @since  2026-04-09
-     */
-    public function testMvcModelQueryPhqlInsertFieldsTrue(): void
-    {
-        $source   = "INSERT INTO Invoices (inv_title, inv_status_flag) VALUES ('New Invoice', TRUE)";
-        $expected = [
-            'type' => Opcode::INSERT->value,
-            'qualifiedName' => [
-                'type' => Opcode::QUALIFIED->value,
-                'name' => 'Invoices',
-            ],
-            'fields'        => [
-                0 => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_title',
-                ],
-                1 => [
-                    'type' => Opcode::QUALIFIED->value,
-                    'name' => 'inv_status_flag',
-                ],
-            ],
-            'values'        => [
-                0 => [
-                    'type' => Opcode::STRING->value,
-                    'value' => 'New Invoice',
-                ],
-                1 => [
-                    'type' => Opcode::TRUE->value,
                 ],
             ],
         ];

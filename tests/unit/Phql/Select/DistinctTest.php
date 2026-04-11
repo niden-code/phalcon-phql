@@ -27,7 +27,8 @@ final class DistinctTest extends AbstractUnitTestCase
      */
     public function testMvcModelQueryPhqlSelectAll(): void
     {
-        $source   = "SELECT ALL inv_status_flag " . "FROM Invoices";
+        $source   = "SELECT ALL inv_status_flag "
+            . "FROM Invoices";
         $expected = [
             'type' => Opcode::SELECT->value,
             'select' => [
@@ -61,7 +62,8 @@ final class DistinctTest extends AbstractUnitTestCase
      */
     public function testMvcModelQueryPhqlSelectDistinct(): void
     {
-        $source   = "SELECT DISTINCT inv_status_flag " . "FROM Invoices";
+        $source   = "SELECT DISTINCT inv_status_flag "
+            . "FROM Invoices";
         $expected = [
             'type' => Opcode::SELECT->value,
             'select' => [
@@ -95,7 +97,8 @@ final class DistinctTest extends AbstractUnitTestCase
      */
     public function testMvcModelQueryPhqlSelectDistinctInt(): void
     {
-        $source   = "SELECT DISTINCT inv_cst_id, inv_status_flag " . "FROM Invoices";
+        $source   = "SELECT DISTINCT inv_cst_id, inv_status_flag "
+            . "FROM Invoices";
         $expected = [
             'type' => Opcode::SELECT->value,
             'select' => [

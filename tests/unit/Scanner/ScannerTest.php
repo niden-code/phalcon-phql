@@ -12,20 +12,70 @@ use Phalcon\Phql\Tests\AbstractUnitTestCase;
 
 final class ScannerTest extends AbstractUnitTestCase
 {
-    private function scanAll(string $input): array
+    public function testBitwiseOperators(): void
     {
-        $state   = new State($input);
+        $opcodes = $this->scanAll('& && | || ~ ^ !! @@ @>');
+        $this->assertSame([
+            Opcode::BITWISE_AND,
+            Opcode::TS_AND,
+            Opcode::BITWISE_OR,
+            Opcode::TS_OR,
+            Opcode::BITWISE_NOT,
+            Opcode::BITWISE_XOR,
+            Opcode::TS_NEGATE,
+            Opcode::TS_MATCHES,
+            Opcode::TS_CONTAINS_ANOTHER,
+        ], $opcodes);
+    }
+
+    public function testBracketPlaceholder(): void
+    {
+        $state   = new State('{id}');
         $scanner = new Scanner($state);
-        $opcodes = [];
 
-        while (($result = $scanner->scanForToken()) === ScannerStatus::OK) {
-            $token = $scanner->getToken();
-            if ($token->opcode !== Opcode::IGNORE) {
-                $opcodes[] = $token->opcode;
-            }
-        }
+        $scanner->scanForToken();
+        $token = $scanner->getToken();
 
-        return $opcodes;
+        $this->assertSame(Opcode::BPLACEHOLDER, $token->opcode);
+        $this->assertSame('id', $token->value);
+    }
+
+    public function testComparisonOperators(): void
+    {
+        $opcodes = $this->scanAll('= != ! < <= > >=');
+        $this->assertSame([
+            Opcode::EQUALS,
+            Opcode::NOTEQUALS,
+            Opcode::NOT,
+            Opcode::LESS,
+            Opcode::LESSEQUAL,
+            Opcode::GREATER,
+            Opcode::GREATEREQUAL,
+        ], $opcodes);
+    }
+
+    public function testDoubleLiteral(): void
+    {
+        $state   = new State('3.14');
+        $scanner = new Scanner($state);
+
+        $scanner->scanForToken();
+        $token = $scanner->getToken();
+
+        $this->assertSame(Opcode::DOUBLE, $token->opcode);
+        $this->assertSame('3.14', $token->value);
+    }
+
+    public function testDoubleQuotedString(): void
+    {
+        $state   = new State('"world"');
+        $scanner = new Scanner($state);
+
+        $scanner->scanForToken();
+        $token = $scanner->getToken();
+
+        $this->assertSame(Opcode::STRING, $token->opcode);
+        $this->assertSame('world', $token->value);
     }
 
     public function testEmptyInputReturnsEof(): void
@@ -36,47 +86,21 @@ final class ScannerTest extends AbstractUnitTestCase
         $this->assertSame(ScannerStatus::EOF, $scanner->scanForToken());
     }
 
-    public function testReturnTypeIsScannerStatus(): void
-    {
-        $state   = new State('SELECT');
-        $scanner = new Scanner($state);
-        $result  = $scanner->scanForToken();
-
-        $this->assertInstanceOf(ScannerStatus::class, $result);
-    }
-
-    public function testNoLegacyRetcodeConstants(): void
-    {
-        $this->assertFalse(defined('Phalcon\Phql\Scanner\Scanner::PHQL_SCANNER_RETCODE_EOF'));
-        $this->assertFalse(defined('Phalcon\Phql\Scanner\Scanner::PHQL_SCANNER_RETCODE_ERR'));
-        $this->assertFalse(defined('Phalcon\Phql\Scanner\Scanner::PHQL_SCANNER_RETCODE_IMPOSSIBLE'));
-    }
-
-    public function testWhitespaceProducesIgnore(): void
-    {
-        $state   = new State('   ');
-        $scanner = new Scanner($state);
-
-        $scanner->scanForToken();
-        $this->assertSame(Opcode::IGNORE, $scanner->getToken()->opcode);
-    }
-
-    public function testSelectKeyword(): void
-    {
-        $opcodes = $this->scanAll('SELECT');
-        $this->assertSame([Opcode::SELECT], $opcodes);
-    }
-
     public function testFromKeyword(): void
     {
         $opcodes = $this->scanAll('FROM');
         $this->assertSame([Opcode::FROM], $opcodes);
     }
 
-    public function testWhereKeyword(): void
+    public function testHexIntegerLiteral(): void
     {
-        $opcodes = $this->scanAll('WHERE');
-        $this->assertSame([Opcode::WHERE], $opcodes);
+        $state   = new State('0xFF');
+        $scanner = new Scanner($state);
+
+        $scanner->scanForToken();
+        $token = $scanner->getToken();
+
+        $this->assertSame(Opcode::HINTEGER, $token->opcode);
     }
 
     public function testIdentifier(): void
@@ -103,53 +127,6 @@ final class ScannerTest extends AbstractUnitTestCase
         $this->assertSame('42', $token->value);
     }
 
-    public function testDoubleLiteral(): void
-    {
-        $state   = new State('3.14');
-        $scanner = new Scanner($state);
-
-        $scanner->scanForToken();
-        $token = $scanner->getToken();
-
-        $this->assertSame(Opcode::DOUBLE, $token->opcode);
-        $this->assertSame('3.14', $token->value);
-    }
-
-    public function testHexIntegerLiteral(): void
-    {
-        $state   = new State('0xFF');
-        $scanner = new Scanner($state);
-
-        $scanner->scanForToken();
-        $token = $scanner->getToken();
-
-        $this->assertSame(Opcode::HINTEGER, $token->opcode);
-    }
-
-    public function testSingleQuotedString(): void
-    {
-        $state   = new State("'hello'");
-        $scanner = new Scanner($state);
-
-        $scanner->scanForToken();
-        $token = $scanner->getToken();
-
-        $this->assertSame(Opcode::STRING, $token->opcode);
-        $this->assertSame('hello', $token->value);
-    }
-
-    public function testDoubleQuotedString(): void
-    {
-        $state   = new State('"world"');
-        $scanner = new Scanner($state);
-
-        $scanner->scanForToken();
-        $token = $scanner->getToken();
-
-        $this->assertSame(Opcode::STRING, $token->opcode);
-        $this->assertSame('world', $token->value);
-    }
-
     public function testNamedPlaceholder(): void
     {
         $state   = new State(':id:');
@@ -162,6 +139,13 @@ final class ScannerTest extends AbstractUnitTestCase
         $this->assertSame('id', $token->value);
     }
 
+    public function testNoLegacyRetcodeConstants(): void
+    {
+        $this->assertFalse(defined('Phalcon\Phql\Scanner\Scanner::PHQL_SCANNER_RETCODE_EOF'));
+        $this->assertFalse(defined('Phalcon\Phql\Scanner\Scanner::PHQL_SCANNER_RETCODE_ERR'));
+        $this->assertFalse(defined('Phalcon\Phql\Scanner\Scanner::PHQL_SCANNER_RETCODE_IMPOSSIBLE'));
+    }
+
     public function testNumericPlaceholder(): void
     {
         $state   = new State('?0');
@@ -171,18 +155,6 @@ final class ScannerTest extends AbstractUnitTestCase
         $token = $scanner->getToken();
 
         $this->assertSame(Opcode::NPLACEHOLDER, $token->opcode);
-    }
-
-    public function testBracketPlaceholder(): void
-    {
-        $state   = new State('{id}');
-        $scanner = new Scanner($state);
-
-        $scanner->scanForToken();
-        $token = $scanner->getToken();
-
-        $this->assertSame(Opcode::BPLACEHOLDER, $token->opcode);
-        $this->assertSame('id', $token->value);
     }
 
     public function testOperators(): void
@@ -197,17 +169,13 @@ final class ScannerTest extends AbstractUnitTestCase
         ], $opcodes);
     }
 
-    public function testComparisonOperators(): void
+    public function testReturnTypeIsScannerStatus(): void
     {
-        $opcodes = $this->scanAll('= != < <= > >=');
-        $this->assertSame([
-            Opcode::EQUALS,
-            Opcode::NOTEQUALS,
-            Opcode::LESS,
-            Opcode::LESSEQUAL,
-            Opcode::GREATER,
-            Opcode::GREATEREQUAL,
-        ], $opcodes);
+        $state   = new State('SELECT');
+        $scanner = new Scanner($state);
+        $result  = $scanner->scanForToken();
+
+        $this->assertInstanceOf(ScannerStatus::class, $result);
     }
 
     public function testSelectFromSequence(): void
@@ -221,6 +189,24 @@ final class ScannerTest extends AbstractUnitTestCase
         ], $opcodes);
     }
 
+    public function testSelectKeyword(): void
+    {
+        $opcodes = $this->scanAll('SELECT');
+        $this->assertSame([Opcode::SELECT], $opcodes);
+    }
+
+    public function testSingleQuotedString(): void
+    {
+        $state   = new State("'hello'");
+        $scanner = new Scanner($state);
+
+        $scanner->scanForToken();
+        $token = $scanner->getToken();
+
+        $this->assertSame(Opcode::STRING, $token->opcode);
+        $this->assertSame('hello', $token->value);
+    }
+
     public function testUnknownCharacterReturnsErr(): void
     {
         $state   = new State('#');
@@ -229,5 +215,36 @@ final class ScannerTest extends AbstractUnitTestCase
 
         // '#' is not a valid PHQL token — scanner returns ERR
         $this->assertSame(ScannerStatus::ERR, $result);
+    }
+
+    public function testWhereKeyword(): void
+    {
+        $opcodes = $this->scanAll('WHERE');
+        $this->assertSame([Opcode::WHERE], $opcodes);
+    }
+
+    public function testWhitespaceProducesIgnore(): void
+    {
+        $state   = new State('   ');
+        $scanner = new Scanner($state);
+
+        $scanner->scanForToken();
+        $this->assertSame(Opcode::IGNORE, $scanner->getToken()->opcode);
+    }
+
+    private function scanAll(string $input): array
+    {
+        $state   = new State($input);
+        $scanner = new Scanner($state);
+        $opcodes = [];
+
+        while (($scanner->scanForToken()) === ScannerStatus::OK) {
+            $token = $scanner->getToken();
+            if ($token->opcode !== Opcode::IGNORE) {
+                $opcodes[] = $token->opcode;
+            }
+        }
+
+        return $opcodes;
     }
 }
