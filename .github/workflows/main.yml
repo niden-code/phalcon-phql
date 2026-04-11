@@ -58,8 +58,8 @@ jobs:
       - name: "PHPCS"
         run: composer cs
 
-#      - name: "PHPStan"
-#        run: composer analyze
+      - name: "PHPStan"
+        run: composer analyze
 
   tests:
     name: PHP ${{ matrix.php }}
@@ -104,6 +104,7 @@ jobs:
 
   coverage:
     name: Code Coverage
+    needs: tests
     runs-on: ubuntu-latest
 
     permissions:
@@ -115,7 +116,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           extensions: mbstring
           coverage: xdebug
           tools: composer:v2
@@ -128,7 +129,7 @@ jobs:
           composer-options: "--prefer-dist"
 
       - name: Run tests with coverage
-        run: vendor/bin/phpunit --coverage-clover coverage.xml
+        run: vendor/bin/phpunit -c phpunit.xml --coverage-clover coverage.xml.
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
