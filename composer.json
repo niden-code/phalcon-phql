@@ -1,15 +1,26 @@
 {
     "name": "phalcon/phql",
     "description": "Phalcon Query Language (PHQL)",
+    "type": "library",
     "keywords": [
         "php",
         "framework",
+        "phalcon",
         "query",
-        "sql"
+        "sql",
+        "phql"
     ],
+    "homepage": "https://phalcon.io",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Phalcon Team",
+            "email": "team@phalcon.io",
+            "homepage": "https://phalcon.io"
+        }
+    ],
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.1 <9.0",
         "ext-mbstring": "*"
     },
     "suggest": {
@@ -17,7 +28,10 @@
     },
     "require-dev": {
         "phpstan/phpstan": "^2.0",
-        "phpunit/phpunit": "^10.5"
+        "phpunit/phpunit": "^10.5",
+        "pds/skeleton": "^1.0",
+        "pds/composer-script-names": "^1.0",
+        "squizlabs/php_codesniffer": "^4.0"
     },
     "autoload": {
         "psr-4": {
@@ -29,12 +43,20 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Phalcon\\Phql\\Tests\\": "tests/",
-            "Phalcon\\Phql\\Tests\\Unit\\": "tests/unit/"
+            "Phalcon\\Phql\\Tests\\": "tests/"
         }
     },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
     "scripts": {
+        "cs": "vendor/bin/phpcs --standard=phpcs.xml",
+        "cs-fix": "vendor/bin/phpcbf --standard=phpcs.xml",
+        "analyze": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit 1024M",
         "test": "vendor/bin/phpunit -c phpunit.xml --fail-on-all-issues",
         "test-coverage": "vendor/bin/phpunit -c phpunit.xml --coverage-html tests/_output/coverage/"
+    },
+    "support": {
+        "issues": "https://github.com/phalcon/phql/issues",
+        "source": "https://github.com/phalcon/phql"
     }
 }

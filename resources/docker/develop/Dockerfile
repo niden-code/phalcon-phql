@@ -44,7 +44,7 @@ RUN groupadd -g "${GID}" "${GROUP}" \
     && rm -rf /tmp/* /var/tmp/* \
     && find /var/cache/apt/archives /var/lib/apt/lists -not -name lock -type f -delete \
     && find /var/cache -type f -delete \
-    && find /var/log -type f -delete \
+    && find /var/log -type f -delete
 
 COPY resources/docker/develop/.bashrc /home/${USER}/.bashrc
 COPY resources/docker/develop/extra.ini /usr/local/etc/php/conf.d/
