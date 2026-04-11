@@ -303,5 +303,4 @@ final class ComplexTest extends AbstractUnitTestCase
         $actual   = (new Parser())->parse($source);
         $this->assertSame($expected, $actual);
     }
-
 }

@@ -285,5 +285,4 @@ final class OrderByTest extends AbstractUnitTestCase
         $actual   = (new Parser())->parse($source);
         $this->assertSame($expected, $actual);
     }
-
 }
