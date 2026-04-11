@@ -7,6 +7,7 @@ namespace Phalcon\Phql\Parser;
 use Phalcon\Phql\Exception;
 use Phalcon\Phql\Scanner\Opcode;
 use Phalcon\Phql\Scanner\Scanner;
+use Phalcon\Phql\Scanner\ScannerStatus;
 use Phalcon\Phql\Scanner\State;
 use Phalcon\Phql\Scanner\Token;
 use phql_Parser;
@@ -21,6 +22,9 @@ class Parser
     {
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function parse(string $phql): array
     {
         if (strlen($phql) === 0) {
@@ -32,7 +36,7 @@ class Parser
             $debug = fopen($this->debugFile, 'w+');
         }
 
-        $codeLength = strlen($phql);
+        $codeLength  = strlen($phql);
         $parserState = new State($phql);
         $parserStatus = new Status($parserState);
         $parserStatus->setEnableLiterals(true);
@@ -42,152 +46,152 @@ class Parser
         $parser->phql_Trace($debug);
 
         $state = $parserStatus->getState();
-        while (0 <= $scannerStatus = $scanner->scanForToken()) {
+        while (ScannerStatus::OK === ($scannerStatus = $scanner->scanForToken())) {
             $this->token = $scanner->getToken();
             $parserStatus->setToken($this->token);
             $state->setStartLength($codeLength - $state->getCursor());
 
-            $opcode = $this->token->getOpcode();
-            $state->setActiveToken($this->token);
+            $opcode = $this->token->opcode;
+            $state->setActiveToken($opcode);
 
             switch ($opcode) {
-                case Opcode::PHQL_T_IGNORE:
+                case Opcode::IGNORE:
                     break;
 
-                case Opcode::PHQL_T_ADD:
+                case Opcode::ADD:
                     $parser->phql_(phql_Parser::PHQL_PLUS);
                     break;
 
-                case Opcode::PHQL_T_SUB:
+                case Opcode::SUB:
                     $parser->phql_(phql_Parser::PHQL_MINUS);
                     break;
 
-                case Opcode::PHQL_T_MUL:
+                case Opcode::MUL:
                     $parser->phql_(phql_Parser::PHQL_TIMES);
                     break;
 
-                case Opcode::PHQL_T_DIV:
+                case Opcode::DIV:
                     $parser->phql_(phql_Parser::PHQL_DIVIDE);
                     break;
 
-                case Opcode::PHQL_T_MOD:
+                case Opcode::MOD:
                     $parser->phql_(phql_Parser::PHQL_MOD);
                     break;
 
-                case Opcode::PHQL_T_AND:
+                case Opcode::AND:
                     $parser->phql_(phql_Parser::PHQL_AND);
                     break;
 
-                case Opcode::PHQL_T_OR:
+                case Opcode::OR:
                     $parser->phql_(phql_Parser::PHQL_OR);
                     break;
-                case Opcode::PHQL_T_EQUALS:
+                case Opcode::EQUALS:
                     $parser->phql_(phql_Parser::PHQL_EQUALS);
                     break;
-                case Opcode::PHQL_T_NOTEQUALS:
+                case Opcode::NOTEQUALS:
                     $parser->phql_(phql_Parser::PHQL_NOTEQUALS);
                     break;
-                case Opcode::PHQL_T_LESS:
+                case Opcode::LESS:
                     $parser->phql_(phql_Parser::PHQL_LESS);
                     break;
-                case Opcode::PHQL_T_GREATER:
+                case Opcode::GREATER:
                     $parser->phql_(phql_Parser::PHQL_GREATER);
                     break;
-                case Opcode::PHQL_T_GREATEREQUAL:
+                case Opcode::GREATEREQUAL:
                     $parser->phql_(phql_Parser::PHQL_GREATEREQUAL);
                     break;
-                case Opcode::PHQL_T_LESSEQUAL:
+                case Opcode::LESSEQUAL:
                     $parser->phql_(phql_Parser::PHQL_LESSEQUAL);
                     break;
-                case Opcode::PHQL_T_IDENTIFIER:
-                    $this->phqlParseWithToken($parser, Opcode::PHQL_T_IDENTIFIER, phql_Parser::PHQL_IDENTIFIER);
+                case Opcode::IDENTIFIER:
+                    $this->phqlParseWithToken($parser, Opcode::IDENTIFIER, phql_Parser::PHQL_IDENTIFIER);
                     break;
 
-                case Opcode::PHQL_T_DOT:
+                case Opcode::DOT:
                     $parser->phql_(phql_Parser::PHQL_DOT);
                     break;
-                case Opcode::PHQL_T_COMMA:
+                case Opcode::COMMA:
                     $parser->phql_(phql_Parser::PHQL_COMMA);
                     break;
 
-                case Opcode::PHQL_T_PARENTHESES_OPEN:
+                case Opcode::PARENTHESES_OPEN:
                     $parser->phql_(phql_Parser::PHQL_PARENTHESES_OPEN);
                     break;
-                case Opcode::PHQL_T_PARENTHESES_CLOSE:
+                case Opcode::PARENTHESES_CLOSE:
                     $parser->phql_(phql_Parser::PHQL_PARENTHESES_CLOSE);
                     break;
 
-                case Opcode::PHQL_T_LIKE:
+                case Opcode::LIKE:
                     $parser->phql_(phql_Parser::PHQL_LIKE);
                     break;
-                case Opcode::PHQL_T_ILIKE:
+                case Opcode::ILIKE:
                     $parser->phql_(phql_Parser::PHQL_ILIKE);
                     break;
-                case Opcode::PHQL_T_NOT:
+                case Opcode::NOT:
                     $parser->phql_(phql_Parser::PHQL_NOT);
                     break;
-                case Opcode::PHQL_T_BITWISE_AND:
+                case Opcode::BITWISE_AND:
                     $parser->phql_(phql_Parser::PHQL_BITWISE_AND);
                     break;
-                case Opcode::PHQL_T_BITWISE_OR:
+                case Opcode::BITWISE_OR:
                     $parser->phql_(phql_Parser::PHQL_BITWISE_OR);
                     break;
-                case Opcode::PHQL_T_BITWISE_NOT:
+                case Opcode::BITWISE_NOT:
                     $parser->phql_(phql_Parser::PHQL_BITWISE_NOT);
                     break;
-                case Opcode::PHQL_T_BITWISE_XOR:
+                case Opcode::BITWISE_XOR:
                     $parser->phql_(phql_Parser::PHQL_BITWISE_XOR);
                     break;
-                case Opcode::PHQL_T_AGAINST:
+                case Opcode::AGAINST:
                     $parser->phql_(phql_Parser::PHQL_AGAINST);
                     break;
-                case Opcode::PHQL_T_CASE:
+                case Opcode::CASE:
                     $parser->phql_(phql_Parser::PHQL_CASE);
                     break;
-                case Opcode::PHQL_T_WHEN:
+                case Opcode::WHEN:
                     $parser->phql_(phql_Parser::PHQL_WHEN);
                     break;
-                case Opcode::PHQL_T_THEN:
+                case Opcode::THEN:
                     $parser->phql_(phql_Parser::PHQL_THEN);
                     break;
-                case Opcode::PHQL_T_END:
+                case Opcode::END:
                     $parser->phql_(phql_Parser::PHQL_END);
                     break;
-                case Opcode::PHQL_T_ELSE:
+                case Opcode::ELSE:
                     $parser->phql_(phql_Parser::PHQL_ELSE);
                     break;
-                case Opcode::PHQL_T_FOR:
+                case Opcode::FOR:
                     $parser->phql_(phql_Parser::PHQL_FOR);
                     break;
-                case Opcode::PHQL_T_WITH:
+                case Opcode::WITH:
                     $parser->phql_(phql_Parser::PHQL_WITH);
                     break;
 
-                case Opcode::PHQL_T_INTEGER:
+                case Opcode::INTEGER:
                     if ($parserStatus->getEnableLiterals()) {
-                        $this->phqlParseWithToken($parser, Opcode::PHQL_T_INTEGER, phql_Parser::PHQL_INTEGER);
+                        $this->phqlParseWithToken($parser, Opcode::INTEGER, phql_Parser::PHQL_INTEGER);
                     } else {
                         $parserStatus->setSyntaxError("Literals are disabled in PHQL statements");
                         $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
-                case Opcode::PHQL_T_DOUBLE:
+                case Opcode::DOUBLE:
                     if ($parserStatus->getEnableLiterals()) {
-                        $this->phqlParseWithToken($parser, Opcode::PHQL_T_DOUBLE, phql_Parser::PHQL_DOUBLE);
+                        $this->phqlParseWithToken($parser, Opcode::DOUBLE, phql_Parser::PHQL_DOUBLE);
                     } else {
                         $parserStatus->setSyntaxError("Literals are disabled in PHQL statements");
                         $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
-                case Opcode::PHQL_T_STRING:
+                case Opcode::STRING:
                     if ($parserStatus->getEnableLiterals()) {
-                        $this->phqlParseWithToken($parser, Opcode::PHQL_T_STRING, phql_Parser::PHQL_STRING);
+                        $this->phqlParseWithToken($parser, Opcode::STRING, phql_Parser::PHQL_STRING);
                     } else {
                         $parserStatus->setSyntaxError("Literals are disabled in PHQL statements");
                         $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
-                case Opcode::PHQL_T_TRUE:
+                case Opcode::TRUE:
                     if ($parserStatus->getEnableLiterals()) {
                         $parser->phql_(phql_Parser::PHQL_TRUE);
                     } else {
@@ -195,7 +199,7 @@ class Parser
                         $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
-                case Opcode::PHQL_T_FALSE:
+                case Opcode::FALSE:
                     if ($parserStatus->getEnableLiterals()) {
                         $parser->phql_(phql_Parser::PHQL_FALSE);
                     } else {
@@ -203,156 +207,155 @@ class Parser
                         $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
-                case Opcode::PHQL_T_HINTEGER:
+                case Opcode::HINTEGER:
                     if ($parserStatus->getEnableLiterals()) {
-                        $this->phqlParseWithToken($parser, Opcode::PHQL_T_HINTEGER, phql_Parser::PHQL_HINTEGER);
+                        $this->phqlParseWithToken($parser, Opcode::HINTEGER, phql_Parser::PHQL_HINTEGER);
                     } else {
                         $parserStatus->setSyntaxError("Integers are disabled in PHQL statements");
                         $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
                     }
                     break;
 
-                case Opcode::PHQL_T_NPLACEHOLDER:
-                    $this->phqlParseWithToken($parser, Opcode::PHQL_T_NPLACEHOLDER, phql_Parser::PHQL_NPLACEHOLDER);
+                case Opcode::NPLACEHOLDER:
+                    $this->phqlParseWithToken($parser, Opcode::NPLACEHOLDER, phql_Parser::PHQL_NPLACEHOLDER);
                     break;
-                case Opcode::PHQL_T_SPLACEHOLDER:
-                    $this->phqlParseWithToken($parser, Opcode::PHQL_T_SPLACEHOLDER, phql_Parser::PHQL_SPLACEHOLDER);
+                case Opcode::SPLACEHOLDER:
+                    $this->phqlParseWithToken($parser, Opcode::SPLACEHOLDER, phql_Parser::PHQL_SPLACEHOLDER);
                     break;
-                case Opcode::PHQL_T_BPLACEHOLDER:
-                    $this->phqlParseWithToken($parser, Opcode::PHQL_T_BPLACEHOLDER, phql_Parser::PHQL_BPLACEHOLDER);
+                case Opcode::BPLACEHOLDER:
+                    $this->phqlParseWithToken($parser, Opcode::BPLACEHOLDER, phql_Parser::PHQL_BPLACEHOLDER);
                     break;
 
-                case Opcode::PHQL_T_FROM:
+                case Opcode::FROM:
                     $parser->phql_(phql_Parser::PHQL_FROM);
                     break;
-                case Opcode::PHQL_T_UPDATE:
+                case Opcode::UPDATE:
                     $parser->phql_(phql_Parser::PHQL_UPDATE);
                     break;
-                case Opcode::PHQL_T_SET:
+                case Opcode::SET:
                     $parser->phql_(phql_Parser::PHQL_SET);
                     break;
-                case Opcode::PHQL_T_WHERE:
+                case Opcode::WHERE:
                     $parser->phql_(phql_Parser::PHQL_WHERE);
                     break;
-                case Opcode::PHQL_T_DELETE:
+                case Opcode::DELETE:
                     $parser->phql_(phql_Parser::PHQL_DELETE);
                     break;
-                case Opcode::PHQL_T_INSERT:
+                case Opcode::INSERT:
                     $parser->phql_(phql_Parser::PHQL_INSERT);
                     break;
-                case Opcode::PHQL_T_INTO:
+                case Opcode::INTO:
                     $parser->phql_(phql_Parser::PHQL_INTO);
                     break;
-                case Opcode::PHQL_T_VALUES:
+                case Opcode::VALUES:
                     $parser->phql_(phql_Parser::PHQL_VALUES);
                     break;
-                case Opcode::PHQL_T_SELECT:
+                case Opcode::SELECT:
                     $parser->phql_(phql_Parser::PHQL_SELECT);
                     break;
-                case Opcode::PHQL_T_AS:
+                case Opcode::AS:
                     $parser->phql_(phql_Parser::PHQL_AS);
                     break;
-                case Opcode::PHQL_T_ORDER:
+                case Opcode::ORDER:
                     $parser->phql_(phql_Parser::PHQL_ORDER);
                     break;
-                case Opcode::PHQL_T_BY:
+                case Opcode::BY:
                     $parser->phql_(phql_Parser::PHQL_BY);
                     break;
-                case Opcode::PHQL_T_LIMIT:
+                case Opcode::LIMIT:
                     $parser->phql_(phql_Parser::PHQL_LIMIT);
                     break;
-                case Opcode::PHQL_T_OFFSET:
+                case Opcode::OFFSET:
                     $parser->phql_(phql_Parser::PHQL_OFFSET);
                     break;
-                case Opcode::PHQL_T_GROUP:
+                case Opcode::GROUP:
                     $parser->phql_(phql_Parser::PHQL_GROUP);
                     break;
-                case Opcode::PHQL_T_HAVING:
+                case Opcode::HAVING:
                     $parser->phql_(phql_Parser::PHQL_HAVING);
                     break;
-                case Opcode::PHQL_T_ASC:
+                case Opcode::ASC:
                     $parser->phql_(phql_Parser::PHQL_ASC);
                     break;
-                case Opcode::PHQL_T_DESC:
+                case Opcode::DESC:
                     $parser->phql_(phql_Parser::PHQL_DESC);
                     break;
-                case Opcode::PHQL_T_IN:
+                case Opcode::IN:
                     $parser->phql_(phql_Parser::PHQL_IN);
                     break;
-                case Opcode::PHQL_T_ON:
+                case Opcode::ON:
                     $parser->phql_(phql_Parser::PHQL_ON);
                     break;
-                case Opcode::PHQL_T_INNER:
+                case Opcode::INNER:
                     $parser->phql_(phql_Parser::PHQL_INNER);
                     break;
-                case Opcode::PHQL_T_JOIN:
+                case Opcode::JOIN:
                     $parser->phql_(phql_Parser::PHQL_JOIN);
                     break;
-                case Opcode::PHQL_T_LEFT:
+                case Opcode::LEFT:
                     $parser->phql_(phql_Parser::PHQL_LEFT);
                     break;
-                case Opcode::PHQL_T_RIGHT:
+                case Opcode::RIGHT:
                     $parser->phql_(phql_Parser::PHQL_RIGHT);
                     break;
-                case Opcode::PHQL_T_CROSS:
+                case Opcode::CROSS:
                     $parser->phql_(phql_Parser::PHQL_CROSS);
                     break;
-                case Opcode::PHQL_T_FULL:
+                case Opcode::FULL:
                     $parser->phql_(phql_Parser::PHQL_FULL);
                     break;
-                case Opcode::PHQL_T_OUTER:
+                case Opcode::OUTER:
                     $parser->phql_(phql_Parser::PHQL_OUTER);
                     break;
-                case Opcode::PHQL_T_IS:
+                case Opcode::IS:
                     $parser->phql_(phql_Parser::PHQL_IS);
                     break;
-                case Opcode::PHQL_T_NULL:
+                case Opcode::NULL:
                     $parser->phql_(phql_Parser::PHQL_NULL);
                     break;
-                case Opcode::PHQL_T_BETWEEN:
+                case Opcode::BETWEEN:
                     $parser->phql_(phql_Parser::PHQL_BETWEEN);
                     break;
-                case Opcode::PHQL_T_BETWEEN_NOT:
+                case Opcode::BETWEEN_NOT:
                     $parser->phql_(phql_Parser::PHQL_BETWEEN_NOT);
                     break;
-                case Opcode::PHQL_T_DISTINCT:
+                case Opcode::DISTINCT:
                     $parser->phql_(phql_Parser::PHQL_DISTINCT);
                     break;
-                case Opcode::PHQL_T_ALL:
+                case Opcode::ALL:
                     $parser->phql_(phql_Parser::PHQL_ALL);
                     break;
-                case Opcode::PHQL_T_CAST:
+                case Opcode::CAST:
                     $parser->phql_(phql_Parser::PHQL_CAST);
                     break;
-                case Opcode::PHQL_T_CONVERT:
+                case Opcode::CONVERT:
                     $parser->phql_(phql_Parser::PHQL_CONVERT);
                     break;
-                case Opcode::PHQL_T_USING:
+                case Opcode::USING:
                     $parser->phql_(phql_Parser::PHQL_USING);
                     break;
-                case Opcode::PHQL_T_EXISTS:
+                case Opcode::EXISTS:
                     $parser->phql_(phql_Parser::PHQL_EXISTS);
                     break;
 
                 default:
                     $parserStatus->setStatus(Status::PHQL_PARSING_FAILED);
-                    $parserStatus->setSyntaxError("Scanner: Unknown opcode %d" . $opcode);
+                    $opcodeValue = $opcode !== null ? $opcode->value : '';
+                    $parserStatus->setSyntaxError("Scanner: Unknown opcode %d" . $opcodeValue);
                     break;
             }
 
             if ($parserStatus->getStatus() === Status::PHQL_PARSING_FAILED) {
                 break;
             }
-
-            $state->setEnd($state->getStart());
         }
 
         if (
-            $scannerStatus === Scanner::PHQL_SCANNER_RETCODE_ERR
-            || $scannerStatus === Scanner::PHQL_SCANNER_RETCODE_IMPOSSIBLE
+            $scannerStatus === ScannerStatus::ERR
+            || $scannerStatus === ScannerStatus::IMPOSSIBLE
         ) {
-            throw new Exception($parserStatus->getSyntaxError());
-        } elseif ($scannerStatus === Scanner::PHQL_SCANNER_RETCODE_EOF) {
+            throw new Exception($parserStatus->getSyntaxError() ?? '');
+        } elseif ($scannerStatus === ScannerStatus::EOF) {
             $parser->phql_(0);
         }
 
@@ -392,23 +395,22 @@ class Parser
          */
 
         $state->setStartLength(0);
-        $state->setActiveToken(0);
+        $state->setActiveToken(null);
 
         if ($parserStatus->getStatus() !== Status::PHQL_PARSING_OK) {
-            throw new Exception($parserStatus->getSyntaxError());
+            throw new Exception($parserStatus->getSyntaxError() ?? '');
         }
 
+        /** @var array<mixed> */
         return $parser->getOutput();
     }
 
     private function phqlParseWithToken(
         phql_Parser $parser,
-        int $opcode,
+        Opcode $opcode,
         int $parserCode,
     ): void {
-        $newToken = new Token();
-        $newToken->setOpcode($opcode);
-        $newToken->setValue($this->token->getValue());
+        $newToken = new Token($opcode, $this->token?->value);
 
         $this->token = $newToken;
 

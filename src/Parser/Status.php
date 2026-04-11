@@ -12,47 +12,32 @@ class Status
     public const PHQL_PARSING_FAILED = 0;
     public const PHQL_PARSING_OK     = 1;
 
-    protected mixed $ret = null;
-
-    protected ?string $syntaxError = null;
-
-    protected ?Token $token = null;
-
-    protected bool $enableLiterals = false;
+    /** @var array<mixed>|null $ast */
+    private array|null $ast = null;
+    private bool $enableLiterals = false;
+    private ?string $syntaxError = null;
+    private ?Token $token = null;
 
     public function __construct(
-        protected State $scannerState,
-        protected int $status = self::PHQL_PARSING_OK,
+        private State $scannerState,
+        private int $status = self::PHQL_PARSING_OK,
     ) {
     }
 
-    public function getState(): State
+    /** @return array<mixed>|null */
+    public function getAst(): array|null
     {
-        return $this->scannerState;
-    }
-
-    public function getRet(): mixed
-    {
-        return $this->ret;
-    }
-
-    public function setRet(mixed $ret): self
-    {
-        $this->ret = $ret;
-
-        return $this;
-    }
-
-    public function setEnableLiterals(bool $enable): self
-    {
-        $this->enableLiterals = $enable;
-
-        return $this;
+        return $this->ast;
     }
 
     public function getEnableLiterals(): bool
     {
         return $this->enableLiterals;
+    }
+
+    public function getState(): State
+    {
+        return $this->scannerState;
     }
 
     public function getStatus(): int
@@ -70,22 +55,36 @@ class Status
         return $this->token;
     }
 
-    public function setStatus(int $status): self
+    /** @param array<mixed> $ast */
+    public function setAst(array $ast): static
     {
-        //throw new \Exception('Test');
+        $this->ast = $ast;
+
+        return $this;
+    }
+
+    public function setEnableLiterals(bool $enable): static
+    {
+        $this->enableLiterals = $enable;
+
+        return $this;
+    }
+
+    public function setStatus(int $status): static
+    {
         $this->status = $status;
 
         return $this;
     }
 
-    public function setSyntaxError(string $syntaxError): self
+    public function setSyntaxError(string $syntaxError): static
     {
         $this->syntaxError = $syntaxError;
 
         return $this;
     }
 
-    public function setToken(Token $token): self
+    public function setToken(Token $token): static
     {
         $this->token = $token;
 
