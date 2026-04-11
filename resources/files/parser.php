@@ -3992,8 +3992,10 @@ class phql_Parser
                 break;
             case 20:
             case 27:
-            case 38:
                 $yygotominor = [];
+                break;
+            case 38:
+                $yygotominor = null;
                 break;
             case 10:
             case 17:
@@ -5202,18 +5204,18 @@ function phql_ret_placeholder_zval(array &$ret, int $type, ?Token $value = null)
     $ret['value'] = $value->getValue() ?? null;
 }
 
-function phql_ret_raw_qualified_name(array &$ret, string $tokenA, ?string $tokenB = null): void
+function phql_ret_raw_qualified_name(array &$ret, Token $tokenA, ?Token $tokenB = null): void
 {
     $ret = [];
     $ret['type'] = Opcode::PHQL_T_RAW_QUALIFIED;
 
     if ($tokenB !== null) {
         /* Two-part qualified name: domain + name */
-        $ret['domain'] = $tokenA;  // equivalent to phql_add_assoc_stringl(..., "domain", A->token, ...)
-        $ret['name'] = $tokenB;  // equivalent to phql_add_assoc_stringl(..., "name",   B->token, ...)
+        $ret['domain'] = $tokenA->getValue();
+        $ret['name']   = $tokenB->getValue();
     } else {
         /* Single-part name */
-        $ret['name'] = $tokenA;
+        $ret['name'] = $tokenA->getValue();
     }
 }
 
